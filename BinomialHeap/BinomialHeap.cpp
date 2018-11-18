@@ -196,7 +196,7 @@ const unsigned BinomialHeap<Type>::size() const {
 template<typename Type>
 PriorityQueue<Type> *BinomialHeap<Type>::HData::getPr() const {
     auto *now = fatherTree;
-    for (; !now->bigFather; now = now->father) {}
+    for (; now->father; now = now->father) {}
     return now->bigFather;
 }
 
