@@ -13,8 +13,6 @@ class BinomialTree {
 
     BinomialTree<Type> *father;
 
-    PriorityQueue<typename Type::type> *bigFather;
-
     Type *key;
 
     explicit BinomialTree(Type * = nullptr);
@@ -31,14 +29,11 @@ private:
     class HData: public Data {
         friend class BinomialHeap<Type>;
 
-        PriorityQueue<Type> *getPr() const;
         BinomialTree<HData> * fatherTree;
         bool toDelete = false;
 
     public:
         typedef Type type;
-
-        HData &operator=(const Type &) override;
 
         explicit HData(const Type &, BinomialTree<HData> * = nullptr);
     };
@@ -71,6 +66,8 @@ public:
 
     template<typename Iterator>
     BinomialHeap(Iterator, Iterator);
+
+    ~BinomialHeap();
 
 private:
 

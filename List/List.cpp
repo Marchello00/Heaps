@@ -26,16 +26,6 @@ void List<Type>::Node::cutBack() {
 }
 
 template<typename Type>
-typename List<Type>::Node *List<Type>::Node::getNext() const {
-    return next;
-}
-
-template<typename Type>
-typename List<Type>::Node *List<Type>::Node::getPrev() const {
-    return prev;
-}
-
-template<typename Type>
 List<Type>::List():
     head(nullptr), tail(nullptr) { }
 
@@ -45,23 +35,28 @@ List<Type>::List(const Type &key) {
 }
 
 template<typename Type>
-List<Type> *List<Type>::pushFront(const Type &key) {
-    this = List(key).connect(*this);
-    return *this;
+typename List<Type>::Iterator List<Type>::pushFront(const Type &key) {
+    auto nl = List(key);
+    nl.connect(*this);
+    *this = nl;
+    return begin();
 }
 
 template<typename Type>
-List<Type> *List<Type>::pushBack(const Type &key) {
+typename List<Type>::Iterator List<Type>::pushBack(const Type &key) {
     List here(key);
+    auto ret = here.begin();
     connect(here);
-    return this;
+    return ret;
 }
 
 template<typename Type>
 List<Type> *List<Type>::connect(List &to) {
+    if (!to.head) {
+        return this;
+    }
     if (!tail) {
         *this = to;
-
     } else {
         tail->connect(to.head);
         tail = to.tail;
@@ -142,6 +137,31 @@ List<Type> &List<Type>::operator+=(const Type &element) {
 }
 
 template<typename Type>
+List<Type>::List(List &old) {
+    head = old.head;
+    tail = old.tail;
+    old.forget();
+}
+
+template<typename Type>
+void List<Type>::erase(typename List<Type>::Iterator it) {
+    auto *f = it.father;
+    if (f->prev) {
+        f->prev->next = f->next;
+    }
+    if (f->next) {
+        f->next->prev = f->prev;
+    }
+    if (head == f) {
+        head = f->next;
+    }
+    if (tail == f) {
+        tail = f->prev;
+    }
+    delete f;
+}
+
+template<typename Type>
 Type &List<Type>::Iterator::operator*() const {
     return father->key;
 }
@@ -153,7 +173,7 @@ Type *List<Type>::Iterator::operator->() const {
 
 template<typename Type>
 typename List<Type>::Iterator &List<Type>::Iterator::operator++() {
-    *this = Iterator(father->getNext());
+    *this = Iterator(father->next);
     return *this;
 }
 
@@ -188,4 +208,14 @@ bool List<Type>::Iterator::operator==(const List::Iterator &a) const {
 template<typename Type>
 bool List<Type>::Iterator::operator!=(const List::Iterator &a) const {
     return !(*this == a);
+}
+
+template<typename Type>
+bool List<Type>::Iterator::operator!() const {
+    return !father;
+}
+
+template<typename Type>
+List<Type>::Iterator::operator bool() const {
+    return father;
 }

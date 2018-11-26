@@ -4,6 +4,8 @@ template<typename Type>
 class List {
 private:
     class Node {
+        friend class List<Type>;
+
     private:
         Node *next;
         Node *prev;
@@ -11,10 +13,6 @@ private:
     public:
 
         Type key;
-
-        Node *getNext() const;
-
-        Node *getPrev() const;
 
         explicit Node(const Type &);
 
@@ -29,8 +27,6 @@ private:
     Node *head;
     Node *tail;
 
-    void forget();
-
 public:
     class Iterator {
         friend List;
@@ -38,24 +34,36 @@ public:
         Node *father;
     public:
         Type &operator*() const;
+
         Type *operator->() const;
 
         explicit Iterator(Node *);
 
         bool operator==(const Iterator &) const;
+
         bool operator!=(const Iterator &) const;
 
         Iterator &operator++();
+
         const Iterator operator++(int);
+
         Iterator &operator--();
+
         const Iterator operator--(int);
+
+        explicit operator bool() const;
+
+        bool operator!() const;
     };
 
     List();
 
     explicit List(const Type &);
 
+    List(List &);
+
     Iterator begin() const;
+
     Iterator end() const;
 
     template<typename Iterator2>
@@ -69,9 +77,11 @@ public:
 
     List<Type> *connect(List &);
 
-    List<Type> *pushFront(const Type &);
+    Iterator pushFront(const Type &);
 
-    List<Type> *pushBack(const Type &);
+    Iterator pushBack(const Type &);
+
+    void erase(Iterator);
 
     const Type popFront();
 
@@ -80,6 +90,8 @@ public:
     List &operator+=(List &);
 
     List &operator+=(const Type &);
+
+    void forget();
 };
 
 #define INCLUDED_LIST

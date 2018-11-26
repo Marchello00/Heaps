@@ -26,14 +26,17 @@ void PriorityQueue<Type>::change(
 
 template<typename Type>
 typename PriorityQueue<Type>::Data &PriorityQueue<Type>::Pointer::operator*() const {
+    object->father = father;
     return *object;
 }
 
 template<typename Type>
-PriorityQueue<Type>::Pointer::Pointer(PriorityQueue::Data *a): object(a) {}
+PriorityQueue<Type>::Pointer::Pointer(PriorityQueue::Data *a, PriorityQueue<Type> *f):
+        object(a), father(f) {}
 
 template<typename Type>
 typename PriorityQueue<Type>::Data *PriorityQueue<Type>::Pointer::operator->() const {
+    object->father = father;
     return object;
 }
 
@@ -48,7 +51,12 @@ PriorityQueue<Type>::Data::Data(PriorityQueue &father, const Type &key):
         father(&father), key(key) {}
 
 template<typename Type>
-PriorityQueue<Type>::Data::Data(const Type &key): key(key), father(nullptr) { }
+PriorityQueue<Type>::Data::Data(const Type &key): key(key), father(nullptr) {}
+
+template<typename Type>
+Type PriorityQueue<Type>::Data::get() const {
+    return key;
+}
 
 template<typename Type>
 std::ostream &operator<<(std::ostream &out, const typename PriorityQueue<Type>::Data &a) {

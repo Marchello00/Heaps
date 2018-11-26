@@ -49,9 +49,6 @@ Array<Type>::Array(const Array<Type> &a): size_(a.size_), capacity_(a.capacity_)
 
 template<typename Type>
 Array<Type> &Array<Type>::operator=(const Array<Type> &a) {
-    for (unsigned i = 0; force && i < capacity_; ++i) {
-        arr[i].~Type();
-    }
     delete[] arr;
     size_ = a.size_, capacity_ = a.capacity_;
     arr = new Type[capacity_];
@@ -63,9 +60,6 @@ Array<Type> &Array<Type>::operator=(const Array<Type> &a) {
 
 template<typename Type>
 Array<Type>::~Array() {
-    for (unsigned i = 0; force && i < capacity_; ++i) {
-        arr[i].~Type();
-    }
     delete[] arr;
 }
 
@@ -90,46 +84,28 @@ void Array<Type>::resize(unsigned newSize) {
         size_ = newSize;
         return;
     }
-    if (!force && newSize < size_) { // Calling destructors if not in force mode
-        for (; size_ > newSize;) {
-            arr[--size_].~Type();
-        }
-    }
-    try {
-        reallocate(newSize);
-    } catch (std::exception &e) {
-        throw e;
+    reallocate(newSize);
+    size_ = newSize;
+}
+
+template<typename Type>
+void Array<Type>::resize(unsigned newSize, const Type &init) {
+    int old = size_;
+    resize(newSize);
+    for (; old < newSize; ++old) {
+        arr[old] = init;
     }
 }
 
 template<typename Type>
 void Array<Type>::reallocate(unsigned newSize) {
-//    if (newSize < size_) {
-//        throw std::out_of_range("The new size_ must be greater than or equal to the old size_. "
-//                                "new size_: " + std::to_string(newSize) + ", old size_: " +
-//                                std::to_string(size_) + ".");
-//    }
     auto *newArr = new Type[newSize];
     capacity_ = std::max(newSize, 1U);
     for (unsigned i = 0; i < std::min(newSize, size_); ++i) {
         newArr[i] = arr[i];
-        if (!force) arr[i].~Type();
-    }
-    for (unsigned i = newSize; !force && i < size_; ++i) {
-        arr[i].~Type();
     }
     std::swap(newArr, arr);
     delete[] newArr;
-}
-
-template<typename Type>
-void Array<Type>::forceModeOn() {
-    force = true;
-}
-
-template<typename Type>
-void Array<Type>::forceModeOff() {
-    force = false;
 }
 
 template<typename Type>
@@ -163,9 +139,6 @@ void Array<Type>::pop() {
                                 " from empty array");
     }
     --size_;
-    if (!force) {
-        arr[size_].~Type();
-    }
     if (size_ * beta <= capacity_) {
         reallocate(size_ * alpha);
     }

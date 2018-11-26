@@ -21,7 +21,8 @@ public:
 
     const unsigned capacity() const;            // get number of allocated places for elements
 
-    void resize(unsigned);                    // change size_ of array
+    void resize(unsigned);                      // change size_ of array
+    void resize(unsigned, const Type &);        // change size_ of array & initialize new elements as given
 
     void clear();
 
@@ -30,9 +31,6 @@ public:
     Array<Type> &operator=(const Array<Type> &);
 
     ~Array();
-
-    void forceModeOn();                         // turn force mode on
-    void forceModeOff();                        // turn force mode off
 
     class Iterator {
     public:
@@ -78,8 +76,6 @@ private:
     unsigned size_;
     unsigned capacity_;
     unsigned alpha = 2, beta = 4;               // Alpha, Beta - constants for reallocation
-
-    bool force = false;                         // if in force mode the destructors of the elements will not be invoked
 
     Type *arr;                                  // container
 

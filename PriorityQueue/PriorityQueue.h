@@ -3,13 +3,18 @@
 
 template<typename Type>
 class PriorityQueue {
+public:
+    class Pointer;
 protected:
     class Data {
+        friend class Pointer;
+        friend class PriorityQueue<Type>;
     protected:
         PriorityQueue *father;
 
-    public:
         Type key;
+    public:
+        Type get() const;
 
         virtual Data &operator=(const Type &);
 
@@ -20,13 +25,14 @@ protected:
 
 public:
     class Pointer {
-    private:
+    protected:
         Data * object;
+        PriorityQueue<Type> *father;
     public:
 
-        Data &operator*() const;
-        Data *operator->() const;
-        explicit Pointer(Data * = nullptr);
+        virtual Data &operator*() const;
+        virtual Data *operator->() const;
+        explicit Pointer(Data * = nullptr, PriorityQueue<Type> * = nullptr);
     };
 
     virtual const bool empty() const=0;

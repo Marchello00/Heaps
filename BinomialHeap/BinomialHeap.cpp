@@ -13,11 +13,14 @@ BinomialTree<Type> *BinomialTree<Type>::connect(BinomialTree *nchild) {
 
 template<typename Type>
 BinomialTree<Type>::BinomialTree(Type *key):
-        key(key), bigFather(nullptr), father(nullptr) {}
+        key(key), father(nullptr) {}
 
 template<typename Type>
 BinomialTree<Type>::~BinomialTree() {
     if (key) delete key;
+    for (auto *tree : childrens) {
+        delete tree;
+    }
 }
 
 template<typename Type>
@@ -37,12 +40,13 @@ const Type BinomialHeap<Type>::getMin() const {
 template<typename Type>
 const Type BinomialHeap<Type>::extractMin() {
     Base::check();
-    Type ret = (roots[mini]->key ? roots[mini]->key->key : Type());
-    auto *mem = roots[mini];
+    Type ret = roots[mini]->key->key;
+    BinomialTree<HData> *mem = roots[mini];
     roots[mini] = nullptr;
     size_ -= (1U << mini);
     BinomialHeap<Type> newHeap(mem->childrens);
     merge(newHeap);
+    mem->childrens.clear();
     norm();
     delete mem;
     return ret;
@@ -104,7 +108,6 @@ void BinomialHeap<Type>::die() {
         c = nullptr;
     }
     size_ = 0;
-    roots.forceModeOn();
     roots.clear();
 }
 
@@ -133,7 +136,6 @@ void BinomialHeap<Type>::recalc() {
     mini = -1;
     for (int i = 0; i < roots.size(); ++i) {
         if (!roots[i]) continue;
-        roots[i]->bigFather = this;
         roots[i]->father = nullptr;
         if (mini == -1 || roots[i]->key->key < roots[mini]->key->key ||
             roots[i]->key->toDelete) {
@@ -151,7 +153,7 @@ void BinomialHeap<Type>::swap(BinomialTree<HData> *ftree, BinomialTree<HData> *s
 template<typename Type>
 void BinomialHeap<Type>::siftUp(Pointer ptr) {
     for (auto *now = static_cast<HData *>(&*ptr)->fatherTree, *nt = now->father;
-        nt && now->key->key <= nt->key->key; now = nt, nt = nt->father) {
+         nt && now->key->key <= nt->key->key; now = nt, nt = nt->father) {
         swap(now, nt);
     }
     recalc();
@@ -163,7 +165,7 @@ void BinomialHeap<Type>::siftDown(Pointer ptr) {
     auto *save = static_cast<HData *>(&*ptr);
     static_cast<HData *>(&*ptr)->toDelete = true;
     Base::change(ptr, getMin());
-    static_cast<HData *>(&*ptr)->fatherTree->key = nullptr;
+    static_cast<HData *>(&*ptr)->fatherTree->key = new HData(rem);
     extractMin();
     save->key = rem;
     insert(save);
@@ -179,8 +181,7 @@ const typename BinomialHeap<Type>::Pointer BinomialHeap<Type>::insert(
     tmp.size_++;
     *this += tmp;
     recalc();
-    tmp.roots.forceModeOn();
-    return Pointer(dt);
+    return Pointer(dt, this);
 }
 
 template<typename Type>
@@ -194,19 +195,10 @@ const unsigned BinomialHeap<Type>::size() const {
 }
 
 template<typename Type>
-PriorityQueue<Type> *BinomialHeap<Type>::HData::getPr() const {
-    auto *now = fatherTree;
-    for (; now->father; now = now->father) {}
-    return now->bigFather;
-}
-
-template<typename Type>
-typename BinomialHeap<Type>::HData &BinomialHeap<Type>::HData::operator=(const Type &key) {
-    if (key == this->key)
-        return *this;
-    auto *bigFather = getPr();
-    bigFather->change(Pointer(this), key);
-    return *this;
+BinomialHeap<Type>::~BinomialHeap() {
+    for (auto *tree : roots) {
+        if (tree) delete tree;
+    }
 }
 
 template<typename Type>
