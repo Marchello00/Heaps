@@ -9,8 +9,9 @@
 #endif
 
 template<typename Type>
-Array<Type>::Array(unsigned int size): size_(size), capacity_(std::max(size, 1U)) {
-    arr = new Type[size];
+Array<Type>::Array(unsigned int size): size_(size), capacity_(std::max(size, 1U)),
+                        constructed(size) {
+    arr = static_cast<Type *>(::operator new(capacity_ * sizeof(Type)));
 }
 
 template<typename Type>
@@ -40,27 +41,32 @@ const Type Array<Type>::operator[](int index) const {
 }
 
 template<typename Type>
-Array<Type>::Array(const Array<Type> &a): size_(a.size_), capacity_(a.capacity_) {
-    arr = new Type[capacity_];
+Array<Type>::Array(const Array<Type> &a): size_(a.size_),
+        capacity_(a.capacity_), constructed(a.size()) {
+    arr = static_cast<Type *>(::operator new(capacity_ * sizeof(Type)));
     for (unsigned i = 0; i < size_; ++i) {
-        arr[i] = a.arr[i];
+        ::new(arr + i) Type(a.arr[i]);
     }
 }
 
 template<typename Type>
 Array<Type> &Array<Type>::operator=(const Array<Type> &a) {
-    delete[] arr;
+    for (unsigned i = 0; i < capacity_; ++i) {
+        arr[i].~Type();
+    }
+    ::operator delete(arr);
     size_ = a.size_, capacity_ = a.capacity_;
-    arr = new Type[capacity_];
+    constructed = a.size_;
+    arr = static_cast<Type *>(::operator new(capacity_ * sizeof(Type)));
     for (unsigned i = 0; i < size_; ++i) {
-        arr[i] = a.arr[i];
+        ::new(arr + i) Type(a.arr[i]);
     }
     return *this;
 }
 
 template<typename Type>
 Array<Type>::~Array() {
-    delete[] arr;
+    ::operator delete(arr);
 }
 
 template<typename Type>
@@ -80,32 +86,49 @@ const unsigned Array<Type>::capacity() const {
 
 template<typename Type>
 void Array<Type>::resize(unsigned newSize) {
-    if (size_ <= newSize && newSize <= capacity_) {
-        size_ = newSize;
-        return;
+    int old = size_;
+    if (!(size_ <= newSize && newSize <= capacity_)) {
+        reallocate(newSize);
     }
-    reallocate(newSize);
     size_ = newSize;
+    for (; old < size_; ++old) {
+        if (constructed <= old) {
+            ::new((void *) (arr + old)) Type();
+            ++constructed;
+        }
+    }
 }
 
 template<typename Type>
 void Array<Type>::resize(unsigned newSize, const Type &init) {
     int old = size_;
-    resize(newSize);
-    for (; old < newSize; ++old) {
-        arr[old] = init;
+    if (!(size_ <= newSize && newSize <= capacity_)) {
+        reallocate(newSize);
+    }
+    size_ = newSize;
+    for (; old < size_; ++old) {
+        if (constructed <= old) {
+            ::new((void *) (arr + old)) Type(init);
+            ++constructed;
+        } else {
+            arr[old] = init;
+        }
     }
 }
 
 template<typename Type>
 void Array<Type>::reallocate(unsigned newSize) {
-    auto *newArr = new Type[newSize];
-    capacity_ = std::max(newSize, 1U);
+    auto *newArr = static_cast<Type *>(::operator new(newSize * sizeof(Type)));
     for (unsigned i = 0; i < std::min(newSize, size_); ++i) {
-        newArr[i] = arr[i];
+        ::new((void *)(newArr + i)) Type(arr[i]);
     }
+    for (unsigned i = 0; i < constructed; ++i) {
+        arr[i].~Type();
+    }
+    constructed = std::min(newSize, size_);
+    capacity_ = std::max(newSize, 1U);
     std::swap(newArr, arr);
-    delete[] newArr;
+    ::operator delete(newArr);
 }
 
 template<typename Type>
@@ -113,7 +136,12 @@ typename Array<Type>::Iterator Array<Type>::push(const Type &element) {
     if (size_ == capacity_) {
         reallocate(alpha * capacity_);
     }
-    arr[size_++] = element;
+    if (size_ < constructed) {
+        arr[size_++] = element;
+    } else {
+        ++constructed;
+        ::new(arr + size_++) Type(element);
+    }
     return getIterator(size_ - 1);
 }
 
@@ -145,10 +173,11 @@ void Array<Type>::pop() {
 }
 
 template<typename Type>
-Array<Type>::Array(unsigned size, const Type &fill): size_(size), capacity_(size) {
-    arr = new Type[size_];
+Array<Type>::Array(unsigned size, const Type &fill): size_(size),
+            capacity_(size), constructed(size_) {
+    arr = static_cast<Type *>(::operator new(size_ * sizeof(Type)));
     for (unsigned i = 0; i < size_; ++i) {
-        arr[i] = fill;
+        ::new((void *)(arr + i)) Type(fill);
     }
 }
 

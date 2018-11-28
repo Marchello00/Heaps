@@ -76,6 +76,7 @@ private:
     unsigned size_;
     unsigned capacity_;
     unsigned alpha = 2, beta = 4;               // Alpha, Beta - constants for reallocation
+    int constructed;
 
     Type *arr;                                  // container
 

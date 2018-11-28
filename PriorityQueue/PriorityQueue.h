@@ -21,6 +21,8 @@ protected:
         Data(PriorityQueue &, const Type &);
 
         explicit Data(const Type &);
+
+        virtual ~Data()= default;
     };
 
 public:

@@ -45,8 +45,9 @@ private:
 
     friend class HData;
 
-public:
     typedef PriorityQueue<Type> Base;
+
+public:
     typedef typename PriorityQueue<Type>::Pointer Pointer;
 
     const bool empty() const override;
@@ -92,7 +93,7 @@ private:
 
     void die();
 
-    void recalc(Iterator);
+    void recalc(Iterator, bool = false);
 
     void change(const Pointer &, const Type &) override;
 

@@ -106,8 +106,8 @@ void FibHeap<Type>::erase(const FibHeap::Pointer &ptr) {
 }
 
 template<typename Type>
-void FibHeap<Type>::recalc(Iterator it) {
-    if (!mini) {
+void FibHeap<Type>::recalc(Iterator it, bool force) {
+    if (!mini || force) {
         mini = it;
         return;
     }
@@ -121,7 +121,8 @@ const typename FibHeap<Type>::Pointer FibHeap<Type>::insert(
         FibHeap::HData *dt) {
     auto *bt = new FibTree<HData>(dt);
     bt->key->fatherTree = bt;
-    recalc(roots.pushBack(bt));
+    bt->fatherIter = roots.pushBack(bt);
+    recalc(bt->fatherIter);
     ++size_;
     return Pointer(dt, this);
 }
@@ -136,11 +137,15 @@ void FibHeap<Type>::change(const typename FibHeap<Type>::Pointer &ptr, const Typ
     if (ptr->get() == key) return;
     auto *rem = static_cast<HData *>(&*ptr);
     if (key < ptr->get()) {
+        rem->key = key;
         cut(rem->fatherTree);
+        recalc(rem->fatherTree->fatherIter);
     } else {
         cut(rem->fatherTree);
         rem->fatherTree->key = new HData(key);
+        recalc(rem->fatherTree->fatherIter, true);
         extractMin();
+        rem->key = key;
         insert(rem);
     }
 }
@@ -150,9 +155,9 @@ void FibHeap<Type>::cut(FibTree<FibHeap::HData> *node) {
     if (!node->father)
         return;
     node->mark = false;
-    roots += node;
     node->father->degree--;
     node->father->childrens.erase(node->fatherIter);
+    node->fatherIter = roots.pushBack(node);
     if (node->father->mark) {
         cut(node->father);
     }
@@ -180,7 +185,8 @@ void FibHeap<Type>::consolidate() {
     mini = roots.end();
     for (auto *tree : res) {
         if (tree) {
-            recalc(roots.pushBack(tree));
+            tree->fatherIter = roots.pushBack(tree);
+            recalc(tree->fatherIter);
             tree->father = nullptr;
         }
     }
