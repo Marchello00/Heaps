@@ -1,6 +1,10 @@
-#ifndef INCLUDED_LIST
+#ifndef LIST_DONE
+#define LIST_DONE
 
 #include <stdexcept>
+
+#ifndef INCLUDED_LIS
+
 #include "List.h"
 
 #endif
@@ -219,3 +223,5 @@ template<typename Type>
 List<Type>::Iterator::operator bool() const {
     return father;
 }
+
+#endif

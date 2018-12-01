@@ -1,3 +1,6 @@
+#ifndef FIBHEAP_DONE
+#define FIBHEAP_DONE
+
 #ifndef INCLUDE_FIBHEAP
 
 #include "FibHeap.h"
@@ -202,3 +205,5 @@ FibHeap<Type>::~FibHeap() {
 template<typename Type>
 FibHeap<Type>::HData::HData(const Type &key, FibTree<HData> *father):
         Data(key), fatherTree(father) {}
+
+#endif

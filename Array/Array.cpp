@@ -1,3 +1,6 @@
+#ifndef ARRAY_DONE
+#define ARRAY_DONE
+
 #include <exception>
 #include <iostream>
 #include <stdexcept>
@@ -7,7 +10,6 @@
 #include "Array.h"
 
 #endif
-
 template<typename Type>
 Array<Type>::Array(unsigned int size): size_(size), capacity_(std::max(size, 1U)),
                         constructed(size) {
@@ -266,3 +268,4 @@ template<typename Type>
 bool Array<Type>::Iterator::operator!=(const Array::Iterator &to) const {
     return !(*this == to);
 }
+#endif

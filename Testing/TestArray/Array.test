@@ -1,0 +1,6 @@
+#include <Array.h>
+
+TEST(ArrayConstructor, EmptyConstructor) {
+    Array<int> a;
+    EXPECT_EQ(a.size(), 0U);
+}

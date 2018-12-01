@@ -1,28 +1,25 @@
 cmake_minimum_required(VERSION 3.12)
+
 project(Lab1)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_EXE main.cpp)
+include_directories(
+        Array
+        List
+        PriorityQueue
+        Heap
+        BinomialHeap
+        FibHeap)
 
-include_directories(Array)
-include_directories(List)
-include_directories(PriorityQueue)
-include_directories(Heap)
-include_directories(BinomialHeap)
-include_directories(FibHeap)
-add_executable(main ${SOURCE_EXE})
+include_directories(Testing)
+
 add_subdirectory(Array)
 add_subdirectory(List)
 add_subdirectory(PriorityQueue)
 add_subdirectory(Heap)
 add_subdirectory(BinomialHeap)
 add_subdirectory(FibHeap)
-target_link_libraries(main Array)
-target_link_libraries(main List)
-target_link_libraries(main PriorityQueue)
-target_link_libraries(main Heap)
-target_link_libraries(main BinomialHeap)
-target_link_libraries(main FibHeap)
 
-add_executable(Lab1 main.cpp)
+enable_testing()
+add_subdirectory(Testing)

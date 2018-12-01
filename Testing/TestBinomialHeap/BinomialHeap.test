@@ -1,0 +1,6 @@
+#include <BinomialHeap.h>
+
+TEST(ArrayConstructor, EmptyConstructor) {
+    BinomialHeap<int> bh;
+    EXPECT_EQ(bh.size(), 0U);
+}

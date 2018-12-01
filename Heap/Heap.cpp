@@ -1,3 +1,6 @@
+#ifndef HEAP_DONE
+#define HEAP_DONE
+
 #ifndef INCLUDED_HEAP
 
 #include "Heap.h"
@@ -105,10 +108,12 @@ const bool Heap<Type>::empty() const {
 }
 
 template<typename Type>
-const int Heap<Type>::size() const {
-    return (int)heap.size() - BEGIN;
+const unsigned Heap<Type>::size() const {
+    return heap.size() - BEGIN;
 }
 
 template<typename Type>
 Heap<Type>::HData::HData(Heap &father, const Type &key, int index):
             Data(father, key), index(index) { }
+
+#endif

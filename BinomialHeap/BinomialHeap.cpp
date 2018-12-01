@@ -1,3 +1,6 @@
+#ifndef BINHEAP_DONE
+#define BINHEAP_DONE
+
 #ifndef INCLUDE_BINHEAP
 
 #include "BinomialHeap.h"
@@ -161,7 +164,7 @@ void BinomialHeap<Type>::siftUp(Pointer ptr) {
 
 template<typename Type>
 void BinomialHeap<Type>::siftDown(Pointer ptr) {
-    auto rem = ptr->key;
+    auto rem = ptr->get();
     auto *save = static_cast<HData *>(&*ptr);
     static_cast<HData *>(&*ptr)->toDelete = true;
     Base::change(ptr, getMin());
@@ -204,3 +207,4 @@ BinomialHeap<Type>::~BinomialHeap() {
 template<typename Type>
 BinomialHeap<Type>::HData::HData(const Type &key, BinomialTree<HData> *father):
         Data(key), fatherTree(father) { }
+#endif
