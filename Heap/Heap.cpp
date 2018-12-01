@@ -72,6 +72,11 @@ const Type Heap<Type>::getMin() const {
 
 template<typename Type>
 const Type Heap<Type>::extractMin() {
+    if (last) {
+        --last;
+        if (!wasInsert) heapify();
+        wasInsert = true;
+    }
     Base::check();
     Type ret = heap[BEGIN]->key;
     swap(BEGIN, -1);
@@ -85,7 +90,12 @@ const typename Heap<Type>::Pointer Heap<Type>::insert(const Type &key) {
     auto dt = new HData(*this, key, heap.size());
     heap.push(dt);
     Pointer ptr(dt);
-    siftUp(ptr);
+    if (last) {
+        --last;
+        wasInsert = false;
+    } else {
+        siftUp(ptr);
+    }
     return ptr;
 }
 
@@ -110,6 +120,14 @@ const bool Heap<Type>::empty() const {
 template<typename Type>
 const unsigned Heap<Type>::size() const {
     return heap.size() - BEGIN;
+}
+
+template<typename Type>
+void Heap<Type>::optimize(unsigned insertCount, unsigned extractCount) {
+    unsigned n = insertCount + extractCount;
+    if (insertCount + extractCount * n < 5 * n * log2(n)) { // insert - O(1), extract - O(n)
+        last = n;
+    }
 }
 
 template<typename Type>
