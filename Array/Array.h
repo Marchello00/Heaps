@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iterator>
+
 template<typename Type>
 class Array {
 public:
@@ -10,9 +12,13 @@ public:
     Array(unsigned, const Type &);
 
     template<typename Iterator2>
-    Array(Iterator2, Iterator2);
+    Array(Iterator2, Iterator2, typename std::enable_if<std::__is_input_iterator  <Iterator2>::value &&
+            std::is_constructible<
+                    Type,
+                    typename std::iterator_traits<Iterator2>::reference>::value>::type* = 0);
 
     Type &operator[](int index);
+
     const Type operator[](int index) const;
 
     const bool empty() const;                   // check array is empty or not
@@ -32,11 +38,14 @@ public:
 
     ~Array();
 
-    class Iterator {
+    class Iterator : public std::iterator<std::input_iterator_tag, Type> {
     public:
         Type &operator*();
 
+        Type *operator->();
+
         bool operator==(const Iterator &) const;
+
         bool operator!=(const Iterator &) const;
 
         Iterator &operator++();
@@ -47,19 +56,19 @@ public:
 
         const Iterator operator--(int);
 
-        Iterator &operator+=(unsigned);
+        Iterator &operator+=(int);
 
-        Iterator &operator-=(unsigned);
+        Iterator &operator-=(int);
 
-        Iterator operator+(unsigned) const;
+        Iterator operator+(int) const;
 
-        Iterator operator-(unsigned) const;
+        Iterator operator-(int) const;
 
         Iterator(Array<Type> *father, unsigned index);
 
     private:
-        unsigned index;
-        Array<Type> * father;
+        int index;
+        Array<Type> *father;
     };
 
     Iterator getIterator(unsigned);

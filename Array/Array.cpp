@@ -10,9 +10,10 @@
 #include "Array.h"
 
 #endif
+
 template<typename Type>
 Array<Type>::Array(unsigned int size): size_(size), capacity_(std::max(size, 1U)),
-                        constructed(size) {
+                                       constructed(size) {
     arr = static_cast<Type *>(::operator new(capacity_ * sizeof(Type)));
 }
 
@@ -23,7 +24,7 @@ Type &Array<Type>::operator[](int index) {
     }
     if (!(0 <= index && index < size_)) {
         throw std::out_of_range("Array size_ is " + std::to_string(size_) + ", so there is no "
-                                                                           "element with index " +
+                                                                            "element with index " +
                                 std::to_string(index) + ".");
     }
     return arr[index];
@@ -36,7 +37,7 @@ const Type Array<Type>::operator[](int index) const {
     }
     if (!(0 <= index && index < size_)) {
         throw std::out_of_range("Array size_ is " + std::to_string(size_) + ", so there is no "
-                                                                           "element with index " +
+                                                                            "element with index " +
                                 std::to_string(index) + ".");
     }
     return arr[index];
@@ -44,7 +45,7 @@ const Type Array<Type>::operator[](int index) const {
 
 template<typename Type>
 Array<Type>::Array(const Array<Type> &a): size_(a.size_),
-        capacity_(a.capacity_), constructed(a.size()) {
+                                          capacity_(a.capacity_), constructed(a.size()) {
     arr = static_cast<Type *>(::operator new(capacity_ * sizeof(Type)));
     for (unsigned i = 0; i < size_; ++i) {
         ::new(arr + i) Type(a.arr[i]);
@@ -122,7 +123,7 @@ template<typename Type>
 void Array<Type>::reallocate(unsigned newSize) {
     auto *newArr = static_cast<Type *>(::operator new(newSize * sizeof(Type)));
     for (unsigned i = 0; i < std::min(newSize, size_); ++i) {
-        ::new((void *)(newArr + i)) Type(arr[i]);
+        ::new((void *) (newArr + i)) Type(arr[i]);
     }
     for (unsigned i = 0; i < constructed; ++i) {
         arr[i].~Type();
@@ -176,16 +177,21 @@ void Array<Type>::pop() {
 
 template<typename Type>
 Array<Type>::Array(unsigned size, const Type &fill): size_(size),
-            capacity_(size), constructed(size_) {
+                                                     capacity_(size), constructed(size_) {
     arr = static_cast<Type *>(::operator new(size_ * sizeof(Type)));
     for (unsigned i = 0; i < size_; ++i) {
-        ::new((void *)(arr + i)) Type(fill);
+        ::new((void *) (arr + i)) Type(fill);
     }
 }
 
 template<typename Type>
 template<typename Iterator2>
-Array<Type>::Array(Iterator2 begin, Iterator2 end): Array() {
+Array<Type>::Array(Iterator2 begin, Iterator2 end,
+                   typename std::enable_if<std::__is_input_iterator<Iterator2>::value &&
+                                           std::is_constructible<
+                                                   Type,
+                                                   typename std::iterator_traits<Iterator2>::reference>::value>::type *)
+        : Array() {
     for (; begin != end; ++begin) {
         push(*begin);
     }
@@ -204,7 +210,8 @@ typename Array<Type>::Iterator &Array<Type>::Iterator::operator++() {
 
 template<typename Type>
 const typename Array<Type>::Iterator Array<Type>::Iterator::operator++(int) {
-    Array<Type>::Iterator old = *this;
+    Array<Type>::Iterator
+            old = *this;
     this->operator++();
     return old;
 }
@@ -217,34 +224,38 @@ typename Array<Type>::Iterator &Array<Type>::Iterator::operator--() {
 
 template<typename Type>
 const typename Array<Type>::Iterator Array<Type>::Iterator::operator--(int) {
-    Array<Type>::Iterator old = *this;
+    Array<Type>::Iterator
+            old = *this;
     this->operator--();
     return old;
 }
 
 template<typename Type>
-typename Array<Type>::Iterator &Array<Type>::Iterator::operator+=(unsigned k) {
-    index = std::max(father->size(), index + k);
+typename Array<Type>::Iterator &Array<Type>::Iterator::operator+=(int k) {
+    index = std::min((int)father->size(), index + k);
+    if (index < 0) index = father->size();
     return *this;
 }
 
 template<typename Type>
-typename Array<Type>::Iterator &Array<Type>::Iterator::operator-=(unsigned k) {
-    k = std::min(k, index);
-    index -= k;
+typename Array<Type>::Iterator &Array<Type>::Iterator::operator-=(int k) {
+    index = std::min((int)father->size(), index - k);
+    if (index < 0) index = father->size();
     return *this;
 }
 
 template<typename Type>
-typename Array<Type>::Iterator Array<Type>::Iterator::operator+(unsigned k) const {
-    Array<Type>::Iterator result = *this;
+typename Array<Type>::Iterator Array<Type>::Iterator::operator+(int k) const {
+    Array<Type>::Iterator
+            result = *this;
     result += k;
     return result;
 }
 
 template<typename Type>
-typename Array<Type>::Iterator Array<Type>::Iterator::operator-(unsigned k) const {
-    Array<Type>::Iterator result = *this;
+typename Array<Type>::Iterator Array<Type>::Iterator::operator-(int k) const {
+    Array<Type>::Iterator
+            result = *this;
     result -= k;
     return result;
 }
@@ -268,4 +279,10 @@ template<typename Type>
 bool Array<Type>::Iterator::operator!=(const Array::Iterator &to) const {
     return !(*this == to);
 }
+
+template<typename Type>
+Type *Array<Type>::Iterator::operator->() {
+    return &father->operator[](index);
+}
+
 #endif

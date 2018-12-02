@@ -26,6 +26,9 @@ fetch_googletest(
 )
 
 enable_testing()
+
+# uncommet one of the following commands for running tests for structure with same name
+
 add_subdirectory(TestArray)
 #add_subdirectory(TestBinomialHeap)
 #add_subdirectory(TestFibHeap)

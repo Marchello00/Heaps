@@ -1,6 +1,179 @@
 #include <Array.h>
+#include <vector>
+#include <set>
 
 TEST(ArrayConstructor, EmptyConstructor) {
     Array<int> a;
     EXPECT_EQ(a.size(), 0U);
+    EXPECT_TRUE(a.empty());
+}
+
+TEST(ArrayConstructor, StandartConstructor) {
+    int n = 100;
+    for (int i = 0; i < n; ++i) {
+        Array<int> a(i);
+        EXPECT_EQ(a.size(), i);
+        if (i) EXPECT_FALSE(a.empty());
+        else EXPECT_TRUE(a.empty());
+    }
+}
+
+TEST(ArrayUsage, Access) {
+    int n = 100;
+    Array<int> a(n);
+    for (int i = 0; i < n; ++i) {
+        a[i] = i;
+    }
+    for (int i = 0; i < n; ++i) {
+        EXPECT_EQ(a[i], i);
+        EXPECT_EQ(a[-(i + 1)], 99 - i);
+    }
+}
+
+TEST(ArrayConstructor, ConstructorAndFilling) {
+    int n = 100, fill = 12345;
+    Array<int> a(n, fill);
+    for (int i = 0; i < n; ++i) {
+        EXPECT_EQ(a[i], fill);
+    }
+}
+
+TEST(ArrayUsage, IteratorsAccess) {
+    int n = 100;
+    Array<int> a;
+    Array<Array<int>::Iterator> its;
+    for (int i = 0; i < n; ++i) {
+        its.push(a.push(i));
+    }
+    for (int i = 0; i < n; ++i) {
+        EXPECT_EQ(*its[i], i);
+        EXPECT_EQ(*a.getIterator(i), i);
+    }
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            try {
+                EXPECT_EQ(a[j], *(a.getIterator(i) + (j - i)));
+                EXPECT_EQ(a[j], *(a.getIterator(i) - (i - j)));
+            } catch (...) {
+                auto it = a.getIterator(i);
+                it += (j - i);
+                it -= (i - j);
+            }
+        }
+        EXPECT_EQ(a.end(), a.getIterator(i) - (i + 1));
+        EXPECT_EQ(a.end(), a.getIterator(i) + (n - i));
+    }
+}
+
+TEST(ArrayUsage, IteratorsOperators) {
+    int n = 100;
+    Array<int> a(n);
+    int now = 0;
+    for (auto &it : a) {
+        it = now++;
+    }
+    for (int i = 0; i < n; ++i) {
+        EXPECT_EQ(a[i], i);
+    }
+}
+
+
+TEST(ArrayConstructor, IteratorsConstructorFromArray) {
+    int n = 100;
+    Array<int> a(n);
+    for (int i = 0; i < n; ++i) {
+        a[i] = i;
+    }
+    Array<int> b(a.begin(), a.end());
+    EXPECT_EQ(a.size(), b.size());
+    for (int i = 0; i < n; ++i) {
+        EXPECT_EQ(a[i], b[i]);
+    }
+}
+
+TEST(ArrayConstructor, IteratorsConstructorFromVector) {
+    int n = 100;
+    std::vector<int> a(n);
+    for (int i = 0; i < n; ++i) {
+        a[i] = i;
+    }
+    Array<int> b(a.begin(), a.end());
+    EXPECT_EQ(a.size(), b.size());
+    for (int i = 0; i < n; ++i) {
+        EXPECT_EQ(a[i], b[i]);
+    }
+}
+
+TEST(ArrayConstructor, IteratorsConstructorFromSet) {
+    int n = 100;
+    std::set<int> s;
+    for (int i = 0; i < n; ++i) {
+        s.insert(i);
+    }
+    Array<int> a(s.begin(), s.end());
+    EXPECT_EQ(a.size(), s.size());
+    std::set<int> ina;
+    for (auto element : a) {
+        EXPECT_NE(s.find(element), s.end());
+        ina.insert(element);
+    }
+    EXPECT_EQ(ina.size(), s.size());
+}
+
+TEST(ArrayUsage, ConstructVectorFromIterators) {
+    int n = 100;
+    Array<int> a(n);
+    for (int i = 0; i < n; ++i) {
+        a[i] = i;
+    }
+    std::vector<int> b(a.begin(), a.end());
+    EXPECT_EQ(a.size(), b.size());
+    for (int i = 0; i < n; ++i) {
+        EXPECT_EQ(a[i], b[i]);
+    }
+}
+
+TEST(ArrayUsage, Capacity) {
+    int n = 100;
+    Array<int> a;
+    EXPECT_LE(a.size(), a.capacity());
+    for (int i = 0; i < n; ++i) {
+        a.push(i);
+        EXPECT_LE(a.size(), a.capacity());
+    }
+}
+
+TEST(ArrayUsage, Resize) {
+    Array<int> a;
+    int n = 100;
+    a.resize(n);
+    for (int i = 0; i < n; ++i) {
+        a[i] = i;
+    }
+    a.resize(n / 2);
+    EXPECT_EQ(a.size(), n / 2);
+    int fill = -1;
+    a.resize(n, fill);
+    for (int i = n / 2; i < n; ++i) {
+        EXPECT_EQ(a[i], fill);
+    }
+}
+
+TEST(ArrayUsage, Clear) {
+    int n = 100;
+    Array<int> a(n);
+    EXPECT_EQ(a.size(), n);
+    a.clear();
+    EXPECT_TRUE(a.empty());
+    EXPECT_EQ(a.size(), 0);
+}
+
+TEST(ArrayUsage, Pop) {
+    int n = 100, fill = 10;
+    Array<int> a(n, fill);
+    for (int i = 0; i < n; ++i) {
+        a.pop();
+        EXPECT_EQ(a.size(), n - i - 1);
+    }
+    EXPECT_TRUE(a.empty());
 }
