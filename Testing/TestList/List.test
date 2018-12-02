@@ -1,1 +1,195 @@
 #include <List.h>
+#include <Array.h>
+#include <algorithm>
+#include <random>
+
+TEST(ListConstructor, EmptyConstructor) {
+    List<int> a;
+    EXPECT_TRUE(a.empty());
+}
+
+TEST(ListConstructor, ElementConstructor) {
+    List<int> a(5);
+    EXPECT_FALSE(a.empty());
+    EXPECT_EQ(*a.begin(), 5);
+    EXPECT_EQ(++a.begin(), a.end());
+}
+
+TEST(ListUsage, PushBack) {
+    int n = 100;
+    List<int> a;
+    Array<List<int>::Iterator> its;
+    for (int i = 0; i < n; ++i) {
+        its.push(a.pushBack(i));
+    }
+    for (int i = 0; i < n; ++i) {
+        EXPECT_EQ(*its[i], i);
+    }
+    int now = 0;
+    for (auto it : a) {
+        EXPECT_EQ(it, now++);
+    }
+}
+
+TEST(ListUsage, PushFront) {
+    int n = 100;
+    List<int> a;
+    Array<List<int>::Iterator> its;
+    for (int i = 0; i < n; ++i) {
+        its.push(a.pushFront(i));
+    }
+    for (int i = 0; i < n; ++i) {
+        EXPECT_EQ(*its[i], i);
+    }
+    int now = n;
+    for (auto it : a) {
+        EXPECT_EQ(it, --now);
+    }
+}
+
+TEST(ListConstructor, FromList) {
+    int n = 100;
+    List<int> a;
+    for (int i = 0; i < n; ++i) {
+        a.pushBack(i);
+    }
+    auto b = a;
+    int now = 0;
+    for (auto el : b) {
+        EXPECT_EQ(el, now++);
+    }
+    EXPECT_TRUE(a.empty());
+}
+
+TEST(ListConstructor, IteratorsConstructors) {
+    int n = 100;
+    Array<int> a(n);
+    for (int i = 0; i < n; ++i) {
+        a[i] = i;
+    }
+    List<int> l(a.begin(), a.end());
+    int now = 0;
+    for (auto el : l) {
+        EXPECT_EQ(el, a[now++]);
+    }
+}
+
+TEST(ListUsage, ConstructArray) {
+    int n = 100;
+    List<int> a;
+    for (int i = 0; i < n; ++i) {
+        a.pushBack(i);
+    }
+    Array<int> b(a.begin(), a.end());
+    int now = 0;
+    for (auto el : a) {
+        EXPECT_EQ(el, b[now++]);
+    }
+}
+
+TEST(ListUsage, Iterators) {
+    int n = 100;
+    List<int> a;
+    for (int i = 0; i < n; ++i) {
+        a.pushBack(i);
+    }
+    int now = 0;
+    for (auto t = a.begin(); t != a.end(); ++t) {
+        EXPECT_EQ(now++, *t);
+    }
+    for (auto t = --a.end(); t != a.begin(); --t) {
+        EXPECT_EQ(--now, *t);
+    }
+}
+
+TEST(ListUsage, Clear) {
+    int n = 100;
+    List<int> a;
+    for (int i = 0; i < n; ++i) {
+        a.pushBack(i);
+    }
+    a.clear();
+    EXPECT_TRUE(a.empty());
+}
+
+TEST(ListUsage, PopBack) {
+    int n = 100;
+    List<int> a;
+    for (int i = 0; i < n; ++i) {
+        a.pushBack(i);
+    }
+    for (int i = 0; i < n; ++i) {
+        EXPECT_EQ(a.popBack(), n - i - 1);
+    }
+    EXPECT_TRUE(a.empty());
+}
+
+TEST(ListUsage, PopFront) {
+    int n = 100;
+    List<int> a;
+    for (int i = 0; i < n; ++i) {
+        a.pushBack(i);
+    }
+    for (int i = 0; i < n; ++i) {
+        EXPECT_EQ(a.popFront(), i);
+    }
+    EXPECT_TRUE(a.empty());
+}
+
+TEST(ListUsage, Erase) {
+    int n = 100;
+    List<int> a;
+    Array<List<int>::Iterator> its;
+    for (int i = 0; i < n; ++i) {
+        its.push(a.pushBack(i));
+    }
+    int seed = 100500;
+    std::shuffle(its.begin(), its.end(), std::default_random_engine(seed));
+    Array<bool> b(n, false);
+    for (int i = 0; i < n; ++i) {
+        b[*its[i]] = true;
+        Array<int> need;
+        for (int j = 0; j < n; ++j) {
+            if (!b[j]) {
+                need.push(j);
+            }
+        }
+        a.erase(its[i]);
+        Array<int> has(a.begin(), a.end());
+        for (int j = 0; j < has.size(); ++j) {
+            EXPECT_EQ(need[j], has[j]);
+        }
+    }
+}
+
+TEST(ListUsage, AddList) {
+    int n = 100;
+    List<int> a;
+    List<int> b;
+    for (int i = 0; i < n; ++i) {
+        a.pushBack(i);
+        b.pushFront(i);
+    }
+    a += b;
+    int now = 0;
+    bool middle = false;
+    for (auto item : a) {
+        EXPECT_EQ(item, now);
+        if (!middle) {
+            ++now;
+            if (now == n) {
+                now = n - 1;
+                middle = true;
+            }
+        } else {
+            --now;
+        }
+    }
+    EXPECT_TRUE(b.empty());
+}
+
+TEST(ListUsage, Exception) {
+    List<int> a;
+    EXPECT_THROW(a.popFront(), std::out_of_range);
+    EXPECT_THROW(a.popBack(), std::out_of_range);
+}

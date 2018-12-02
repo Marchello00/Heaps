@@ -11,7 +11,7 @@
 
 template<typename Type>
 List<Type>::Node::Node(const Type &key):
-        key(key), next(nullptr), prev(nullptr) {}
+        key(new Type(key)), next(nullptr), prev(nullptr) {}
 
 template<typename Type>
 void List<Type>::Node::connect(List::Node *to) {
@@ -20,29 +20,34 @@ void List<Type>::Node::connect(List::Node *to) {
 }
 
 template<typename Type>
-void List<Type>::Node::cutFront() {
-    this->prev = nullptr;
-}
+List<Type>::Node::Node() :
+    prev(nullptr), next(nullptr),
+    key(nullptr) { }
 
 template<typename Type>
-void List<Type>::Node::cutBack() {
-    this->next = nullptr;
+List<Type>::Node::~Node() {
+    if (key) delete(key);
 }
 
 template<typename Type>
 List<Type>::List():
-    head(nullptr), tail(nullptr) { }
+        head(nullptr), tail(nullptr),
+        endNode(new Node()) {}
 
 template<typename Type>
-List<Type>::List(const Type &key) {
+List<Type>::List(const Type &key) : List() {
     head = tail = new Node(key);
+    tail->connect(endNode);
 }
 
 template<typename Type>
 typename List<Type>::Iterator List<Type>::pushFront(const Type &key) {
-    auto nl = List(key);
+    List nl(key);
     nl.connect(*this);
-    *this = nl;
+    std::swap(nl.head, head);
+    std::swap(nl.tail, tail);
+    std::swap(nl.endNode, endNode);
+    nl.forget();
     return begin();
 }
 
@@ -64,23 +69,30 @@ List<Type> *List<Type>::connect(List &to) {
     } else {
         tail->connect(to.head);
         tail = to.tail;
+        tail->connect(endNode);
+        to.forget();
     }
-    to.forget();
     return this;
 }
 
 template<typename Type>
 List<Type>::~List() {
-    for (auto now = begin(); now != end(); delete (now++).father) { }
+    for (auto now = begin(); now && now != end(); delete (now++).father) {}
+    delete(endNode);
 }
 
 template<typename Type>
 const Type List<Type>::popFront() {
     check();
-    auto old = head->getNext();
-    auto ret = old->key;
+    auto *old = head;
+    head = head->next;
+    auto ret = *(old->key);
     delete old;
-    if (head) head->cutFront();
+    if (head != endNode) head->prev = nullptr;
+    else {
+        tail = head = nullptr;
+        endNode->prev = nullptr;
+    }
     return ret;
 }
 
@@ -98,7 +110,12 @@ void List<Type>::check() const {
 
 template<typename Type>
 template<typename Iterator2>
-List<Type>::List(const Iterator2 &begin, const Iterator2 &end): List() {
+List<Type>::List(const Iterator2 &begin, const Iterator2 &end,
+                 typename std::enable_if<std::__is_input_iterator<Iterator2>::value &&
+                                         std::is_constructible<
+                                                 Type,
+                                                 typename std::iterator_traits<Iterator2>::reference>::value>::type *)
+        : List() {
     for (auto it = begin; it != end; ++it) {
         pushBack(*it);
     }
@@ -106,11 +123,17 @@ List<Type>::List(const Iterator2 &begin, const Iterator2 &end): List() {
 
 template<typename Type>
 const Type List<Type>::popBack() {
-    auto old = tail;
-    auto ret = old->key;
-    tail = old->getPrev();
+    check();
+    auto *old = tail;
+    auto ret = *(old->key);
+    tail = tail->prev;
     delete old;
-    if (tail) tail->cutBack();
+    if (tail) {
+        tail->connect(endNode);
+    } else {
+        head = nullptr;
+        endNode->prev = nullptr;
+    }
     return ret;
 }
 
@@ -126,12 +149,13 @@ typename List<Type>::Iterator List<Type>::begin() const {
 
 template<typename Type>
 typename List<Type>::Iterator List<Type>::end() const {
-    return List::Iterator(nullptr);
+    return List::Iterator(endNode);
 }
 
 template<typename Type>
 void List<Type>::forget() {
     head = tail = nullptr;
+    endNode->prev = nullptr;
 }
 
 template<typename Type>
@@ -144,6 +168,8 @@ template<typename Type>
 List<Type>::List(List &old) {
     head = old.head;
     tail = old.tail;
+    endNode = new Node();
+    if (tail) tail->connect(endNode);
     old.forget();
 }
 
@@ -161,13 +187,31 @@ void List<Type>::erase(typename List<Type>::Iterator it) {
     }
     if (tail == f) {
         tail = f->prev;
+
     }
     delete f;
 }
 
 template<typename Type>
+void List<Type>::clear() {
+    for (auto now = begin(); now != end(); delete (now++).father) {}
+    head = tail = nullptr;
+    endNode->prev = nullptr;
+}
+
+template<typename Type>
+List<Type> &List<Type>::operator=(List &old) {
+    head = old.head;
+    tail = old.tail;
+    endNode = new Node();
+    if (tail) tail->connect(endNode);
+    old.forget();
+    return *this;
+}
+
+template<typename Type>
 Type &List<Type>::Iterator::operator*() const {
-    return father->key;
+    return *(father->key);
 }
 
 template<typename Type>
@@ -177,17 +221,17 @@ Type *List<Type>::Iterator::operator->() const {
 
 template<typename Type>
 typename List<Type>::Iterator &List<Type>::Iterator::operator++() {
-    *this = Iterator(father->next);
+    father = father->next;
     return *this;
 }
 
 template<typename Type>
-List<Type>::Iterator::Iterator(List::Node *father): father(father) { }
+List<Type>::Iterator::Iterator(typename List<Type>::Node *father): father(father) {}
 
 template<typename Type>
 typename List<Type>::Iterator &List<Type>::Iterator::operator--() {
-    father = father->getPrev();
-    return this;
+    father = father->prev;
+    return *this;
 }
 
 template<typename Type>

@@ -285,4 +285,29 @@ Type *Array<Type>::Iterator::operator->() {
     return &father->operator[](index);
 }
 
+template<typename Type>
+int Array<Type>::Iterator::operator-(const Array::Iterator &other) const {
+    return index - other.index;
+}
+
+template<typename Type>
+bool Array<Type>::Iterator::operator<(const Array::Iterator &other) const {
+    return index < other.index;
+}
+
+template<typename Type>
+bool Array<Type>::Iterator::operator>(const Array::Iterator &other) const {
+    return index > other.index;
+}
+
+template<typename Type>
+bool Array<Type>::Iterator::operator>=(const Array::Iterator &other) const {
+    return *this > other || *this == other;
+}
+
+template<typename Type>
+bool Array<Type>::Iterator::operator<=(const Array::Iterator &other) const {
+    return *this < other || *this == other;
+}
+
 #endif

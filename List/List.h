@@ -1,34 +1,35 @@
 #pragma once
 
+#include <iterator>
+
 template<typename Type>
 class List {
 private:
     class Node {
         friend class List<Type>;
 
-    private:
         Node *next;
         Node *prev;
 
-    public:
+        Node();
 
-        Type key;
+        Type *key;
 
         explicit Node(const Type &);
 
         void connect(Node *);
 
-        void cutFront();
-
-        void cutBack();
+        ~Node();
 
     };
 
     Node *head;
     Node *tail;
 
+    Node *endNode;
+
 public:
-    class Iterator {
+    class Iterator : public std::iterator<std::input_iterator_tag, Type> {
         friend List;
     private:
         Node *father;
@@ -62,20 +63,24 @@ public:
 
     List(List &);
 
+    List &operator=(List &);            // ATTENTION!!! right List isn't rvalue, it'll be changed(cleared) for O(1) complexity
+
     Iterator begin() const;
 
     Iterator end() const;
 
     template<typename Iterator2>
-    List(const Iterator2 &, const Iterator2 &);
+    List(const Iterator2 &, const Iterator2 &,
+         typename std::enable_if<std::__is_input_iterator  <Iterator2>::value &&
+                                 std::is_constructible<
+                                         Type,
+                                         typename std::iterator_traits<Iterator2>::reference>::value>::type* = 0);
 
     ~List();
 
     bool empty() const;
 
-    void check() const;
-
-    List<Type> *connect(List &);
+    void clear();
 
     Iterator pushFront(const Type &);
 
@@ -91,7 +96,14 @@ public:
 
     List &operator+=(const Type &);
 
+
+private:
+
     void forget();
+
+    void check() const;
+
+    List<Type> *connect(List &);
 };
 
 #define INCLUDED_LIST

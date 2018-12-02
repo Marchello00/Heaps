@@ -14,7 +14,8 @@ TEST(ArrayConstructor, StandartConstructor) {
         Array<int> a(i);
         EXPECT_EQ(a.size(), i);
         if (i) EXPECT_FALSE(a.empty());
-        else EXPECT_TRUE(a.empty());
+        else
+            EXPECT_TRUE(a.empty());
     }
 }
 
@@ -51,14 +52,14 @@ TEST(ArrayUsage, IteratorsAccess) {
     }
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
-            try {
-                EXPECT_EQ(a[j], *(a.getIterator(i) + (j - i)));
-                EXPECT_EQ(a[j], *(a.getIterator(i) - (i - j)));
-            } catch (...) {
-                auto it = a.getIterator(i);
-                it += (j - i);
-                it -= (i - j);
-            }
+            auto iti = a.getIterator(i), itj = a.getIterator(j);
+            EXPECT_EQ(a[j], *(iti + (j - i)));
+            EXPECT_EQ(a[j], *(iti - (i - j)));
+            EXPECT_EQ(iti - itj, i - j);
+            EXPECT_EQ(iti < itj, i < j);
+            EXPECT_EQ(iti > itj, i > j);
+            EXPECT_EQ(iti <= itj, i <= j);
+            EXPECT_EQ(iti >= itj, i >= j);
         }
         EXPECT_EQ(a.end(), a.getIterator(i) - (i + 1));
         EXPECT_EQ(a.end(), a.getIterator(i) + (n - i));
@@ -176,4 +177,10 @@ TEST(ArrayUsage, Pop) {
         EXPECT_EQ(a.size(), n - i - 1);
     }
     EXPECT_TRUE(a.empty());
+}
+
+TEST(ArrayUsage, Exception) {
+    int n = 100, fill = 0;
+    Array<int> a(n, fill);
+    EXPECT_THROW(a[n], std::out_of_range);
 }

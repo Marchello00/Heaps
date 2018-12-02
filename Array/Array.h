@@ -12,7 +12,7 @@ public:
     Array(unsigned, const Type &);
 
     template<typename Iterator2>
-    Array(Iterator2, Iterator2, typename std::enable_if<std::__is_input_iterator  <Iterator2>::value &&
+    Array(Iterator2, Iterator2, typename std::enable_if<std::__is_input_iterator<Iterator2>::value &&
             std::is_constructible<
                     Type,
                     typename std::iterator_traits<Iterator2>::reference>::value>::type* = 0);
@@ -38,7 +38,7 @@ public:
 
     ~Array();
 
-    class Iterator : public std::iterator<std::input_iterator_tag, Type> {
+    class Iterator : public std::iterator<std::random_access_iterator_tag, Type> {
     public:
         Type &operator*();
 
@@ -63,6 +63,16 @@ public:
         Iterator operator+(int) const;
 
         Iterator operator-(int) const;
+
+        int operator-(const Iterator &) const;
+
+        bool operator<(const Iterator &) const;
+
+        bool operator>(const Iterator &) const;
+
+        bool operator<=(const Iterator &) const;
+
+        bool operator>=(const Iterator &) const;
 
         Iterator(Array<Type> *father, unsigned index);
 
