@@ -10,6 +10,7 @@ private:
     typedef typename PriorityQueue<Type>::Data Data;
 
     class HData: public Data {
+        friend class Heap<Type>;
     public:
         int index;
         HData(Heap &, const Type &, int);
@@ -41,7 +42,7 @@ private:
     const unsigned K = 2;
     const int BEGIN = 1;
 
-    Array<Data *> heap;
+    Array<HData *> heap;
 
     const unsigned parent(int) const;
     const unsigned child(int, int) const;

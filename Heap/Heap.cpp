@@ -1,6 +1,8 @@
 #ifndef HEAP_DONE
 #define HEAP_DONE
 
+#include <cmath>
+
 #ifndef INCLUDED_HEAP
 
 #include "Heap.h"
@@ -74,8 +76,8 @@ template<typename Type>
 const Type Heap<Type>::extractMin() {
     if (last) {
         --last;
-        if (!wasInsert) heapify();
-        wasInsert = true;
+        if (wasInsert) heapify();
+        wasInsert = false;
     }
     Base::check();
     Type ret = heap[BEGIN]->key;
@@ -89,10 +91,13 @@ template<typename Type>
 const typename Heap<Type>::Pointer Heap<Type>::insert(const Type &key) {
     auto dt = new HData(*this, key, heap.size());
     heap.push(dt);
-    Pointer ptr(dt);
+    Pointer ptr(dt, this);
     if (last) {
-        --last;
-        wasInsert = false;
+        if (--last) {
+            wasInsert = true;
+        } else {
+            if (!wasInsert) heapify();
+        }
     } else {
         siftUp(ptr);
     }
@@ -125,7 +130,7 @@ const unsigned Heap<Type>::size() const {
 template<typename Type>
 void Heap<Type>::optimize(unsigned insertCount, unsigned extractCount) {
     unsigned n = insertCount + extractCount;
-    if (insertCount + extractCount * n < 5 * n * log2(n)) { // insert - O(1), extract - O(n)
+    if (insertCount + extractCount * n < 5 * n * (int) std::log2(n)) { // insert - O(1), extract - O(n)
         last = n;
     }
 }
