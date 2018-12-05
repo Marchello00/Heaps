@@ -184,6 +184,7 @@ void List<Type>::erase(typename List<Type>::Iterator it) {
     }
     if (head == f) {
         head = f->next;
+        if (head == endNode) head = nullptr;
     }
     if (tail == f) {
         tail = f->prev;
@@ -250,7 +251,9 @@ const typename List<Type>::Iterator List<Type>::Iterator::operator--(int) {
 
 template<typename Type>
 bool List<Type>::Iterator::operator==(const List::Iterator &a) const {
-    return father == a.father;
+    return father == a.father ||
+            (!father && a.father && !a.father->next) ||
+            (!a.father && father && !father->next);
 }
 
 template<typename Type>
@@ -260,7 +263,7 @@ bool List<Type>::Iterator::operator!=(const List::Iterator &a) const {
 
 template<typename Type>
 bool List<Type>::Iterator::operator!() const {
-    return !father;
+    return !father || (father && !father->key);
 }
 
 template<typename Type>

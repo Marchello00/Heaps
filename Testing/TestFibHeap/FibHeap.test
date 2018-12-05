@@ -1,1 +1,182 @@
 #include <FibHeap.h>
+#include <Array.h>
+#include <random>
+#include <algorithm>
+
+TEST(FibHeapConstructor, EmptyConstructor) {
+    FibHeap<int> h;
+    EXPECT_TRUE(h.empty());
+    EXPECT_EQ(h.size(), 0);
+}
+
+TEST(FibHeapUsage, Insert) {
+    int n = 100;
+    FibHeap<int> h;
+    for (int i = 0; i < n; ++i) {
+        h.insert(n - i);
+        EXPECT_EQ(h.size(), i + 1);
+        EXPECT_EQ(h.getMin(), n - i);
+    }
+    int seed = 100500;
+    srand(seed);
+    for (int i = 0; i < n; ++i) {
+        h.insert(rand());
+        EXPECT_EQ(h.size(), i + n + 1);
+    }
+}
+
+TEST(FibHeapUsage, ExtractMinAndGetMin) {
+    int n = 100;
+    FibHeap<int> h;
+    Array<int> a(n);
+    for (int i = 0; i < n; ++i) {
+        a[i] = i;
+    }
+    int seed = 100500;
+    std::shuffle(a.begin(), a.end(), std::default_random_engine(seed));
+    for (int i = 0; i < n; ++i) {
+        h.insert(a[i]);
+        EXPECT_EQ(h.size(), i + 1);
+        EXPECT_FALSE(h.empty());
+    }
+    for (int i = 0; i < n; ++i) {
+        int here = h.getMin();
+        EXPECT_EQ(here, i);
+        EXPECT_EQ(h.extractMin(), here);
+        EXPECT_EQ(h.size(), n - i - 1);
+    }
+    EXPECT_TRUE(h.empty());
+}
+
+TEST(FibHeapConstructor, IteratorsConstructor) {
+    int n = 100;
+    Array<int> a(n);
+    for (int i = 0; i < n; ++i) {
+        a[i] = i;
+    }
+    int seed = 100500;
+    std::shuffle(a.begin(), a.end(), std::default_random_engine(seed));
+    FibHeap<int> h(a.begin(), a.end());
+    EXPECT_EQ(h.size(), a.size());
+    EXPECT_FALSE(h.empty());
+    for (int i = 0; i < n; ++i) {
+        EXPECT_EQ(h.extractMin(), i);
+    }
+    EXPECT_TRUE(h.empty());
+}
+
+TEST(FibHeapUsage, Pointers) {
+    int n = 100;
+    Array<FibHeap<int>::Pointer> a;
+    FibHeap<int> h;
+    for (int i = 0; i < n; ++i) {
+        a.push(h.insert(i));
+    }
+    for (int i = 0; i < n; ++i) {
+        EXPECT_EQ(a[i]->get(), i);
+    }
+    Array<bool> has(n, true);
+    int seed = 100500;
+    std::shuffle(a.begin(), a.end(), std::default_random_engine(seed));
+    for (int i = 0; i < n; ++i) {
+        int mini;
+        for (mini = 0; !has[mini]; ++mini) {}
+        EXPECT_EQ(mini, h.extractMin());
+        has[mini] = false;
+        EXPECT_EQ(h.size(), n - i - 1);
+    }
+    EXPECT_TRUE(h.empty());
+}
+
+TEST(FibHeapUsage, Erase) {
+    int n = 5;
+    FibHeap<int> h;
+    Array<FibHeap<int>::Pointer> a;
+    for (int i = 0; i < n; ++i) {
+        a.push(h.insert(i));
+    }
+    int seed = 100500;
+    std::shuffle(a.begin(), a.end(), std::default_random_engine(seed));
+    Array<bool> has(n, true);
+    for (int i = 0; i < n; ++i) {
+        int mini;
+        for (mini = 0; !has[mini] && mini < n; ++mini) {}
+        EXPECT_EQ(mini, h.getMin());
+        has[a[i]->get()] = false;
+        h.erase(a[i]);
+        EXPECT_EQ(h.size(), n - i - 1);
+    }
+    EXPECT_TRUE(h.empty());
+}
+
+TEST(FibHeapUsage, Change) {
+    int n = 100;
+    Array<int> a(n);
+    int seed = 100500;
+    srand(seed);
+    for (auto &c : a) {
+        c = rand();
+    }
+    Array<FibHeap<int>::Pointer> ptr1, ptr2;
+    FibHeap<int> h1, h2;
+    for (int i = 0; i < n; ++i) {
+        ptr1.push(h1.insert(a[i]));
+        ptr2.push(h2.insert(a[i]));
+    }
+    Array<bool> here(n, true);
+    for (int iter = 0; iter < n; ++iter) {
+        int change = rand() % (n - iter) + 1;
+        int ind = 0;
+        for (; change; change -= here[ind++]) { }
+        ind--;
+        int to = rand();
+        h1.change(ptr1[ind], to);
+        *ptr2[ind] = to;
+        a[ind] = to;
+        EXPECT_EQ(h1.getMin(), h2.getMin());
+        int toDel = h1.getMin();
+        int indDel = -1;
+        for (int i = 0; i < n; ++i) {
+            EXPECT_TRUE(!here[i] || a[i] >= toDel);
+            if (here[i] && a[i] == toDel) {
+                indDel = i;
+            }
+        }
+        EXPECT_TRUE(indDel >= 0);
+        here[indDel] = false;
+        EXPECT_EQ(h1.extractMin(), h2.extractMin());
+    }
+}
+
+TEST(FibHeapUsage, Exception) {
+    FibHeap<int> h;
+    EXPECT_THROW(h.getMin(), std::out_of_range);
+    EXPECT_THROW(h.extractMin(), std::out_of_range);
+}
+
+TEST(FibHeap, Merge) {
+    int n = 100;
+    FibHeap<int> h1, h2, h3, h4;
+    for (int i = 0; i < n; ++i) {
+        h1.insert(i);
+        h3.insert(i);
+    }
+    for (int i = 2 * n; i < 3 * n; ++i) {
+        h2.insert(i);
+        h4.insert(i);
+    }
+    h1.merge(h2);
+    h3 += h4;
+    EXPECT_EQ(h1.size(), 2 * n);
+    EXPECT_EQ(h3.size(), 2 * n);
+    EXPECT_TRUE(h2.empty());
+    EXPECT_TRUE(h4.empty());
+    for (int i = 0; i < n; ++i) {
+        EXPECT_EQ(i, h1.extractMin());
+        EXPECT_EQ(i, h3.extractMin());
+    }
+    for (int i = 2 * n; i < 3 * n; ++i) {
+        EXPECT_EQ(i, h1.extractMin());
+        EXPECT_EQ(i, h3.extractMin());
+    }
+}

@@ -125,9 +125,6 @@ TEST(BinomialHeapUsage, Change) {
     }
     Array<bool> here(n, true);
     for (int iter = 0; iter < n; ++iter) {
-        if (iter == 86) {
-            std::cout << "Lol\n";
-        }
         int change = rand() % (n - iter) + 1;
         int ind = 0;
         for (; change; change -= here[ind++]) { }

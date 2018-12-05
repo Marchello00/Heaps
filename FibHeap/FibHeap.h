@@ -62,6 +62,8 @@ public:
 
     void merge(FibHeap &);
 
+    void change(const Pointer &, const Type &) override;
+
     const unsigned size() const override;
 
     FibHeap<Type> &operator+=(FibHeap &);
@@ -78,8 +80,8 @@ private:
     typedef typename List<FibTree<HData> *>::Iterator Iterator;
 
     Iterator mini;
-
     unsigned size_;
+
     List<FibTree<HData> *> roots;
 
     FibTree<HData> *connect(
@@ -94,8 +96,6 @@ private:
     void die();
 
     void recalc(Iterator, bool = false);
-
-    void change(const Pointer &, const Type &) override;
 
     void cut(FibTree<HData> *);
 

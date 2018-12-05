@@ -90,6 +90,9 @@ TEST(ListUsage, ConstructArray) {
 TEST(ListUsage, Iterators) {
     int n = 100;
     List<int> a;
+    for (auto item : a) {
+        EXPECT_TRUE(false);
+    }
     for (int i = 0; i < n; ++i) {
         a.pushBack(i);
     }

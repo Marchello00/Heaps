@@ -49,7 +49,6 @@ const Type FibHeap<Type>::extractMin() {
     Type ret = (*mini)->key->key;
     size_--;
     roots += (*mini)->childrens;
-    (*mini)->childrens.forget();
     delete(*mini);
     roots.erase(mini);
     consolidate();
@@ -85,12 +84,12 @@ FibTree<typename FibHeap<Type>::HData> *FibHeap<Type>::connect(
 template<typename Type>
 void FibHeap<Type>::die() {
     size_ = 0;
-    roots.forget();
+    roots.clear();
 }
 
 template<typename Type>
 template<typename Iterator2>
-FibHeap<Type>::FibHeap(Iterator2 begin, Iterator2 end) {
+FibHeap<Type>::FibHeap(Iterator2 begin, Iterator2 end): FibHeap() {
     for (; begin != end; ++begin) {
         insert(*begin);
     }
@@ -104,7 +103,7 @@ const typename FibHeap<Type>::Pointer FibHeap<Type>::insert(const Type &key) {
 template<typename Type>
 void FibHeap<Type>::erase(const FibHeap::Pointer &ptr) {
     static_cast<HData *>(&*ptr)->toDelete = true;
-    Base::change(ptr, getMin());
+    change(ptr, getMin());
     extractMin();
 }
 
@@ -183,8 +182,6 @@ void FibHeap<Type>::consolidate() {
             res[tree->degree] = tree;
         }
     }
-    q.forget();
-    roots.forget();
     mini = roots.end();
     for (auto *tree : res) {
         if (tree) {
