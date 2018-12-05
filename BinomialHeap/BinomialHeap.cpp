@@ -116,7 +116,7 @@ void BinomialHeap<Type>::die() {
 
 template<typename Type>
 template<typename Iterator>
-BinomialHeap<Type>::BinomialHeap(Iterator begin, Iterator end) {
+BinomialHeap<Type>::BinomialHeap(Iterator begin, Iterator end): BinomialHeap() {
     for (; begin != end; ++begin) {
         insert(*begin);
     }
@@ -169,6 +169,7 @@ void BinomialHeap<Type>::siftDown(Pointer ptr) {
     static_cast<HData *>(&*ptr)->toDelete = true;
     Base::change(ptr, getMin());
     static_cast<HData *>(&*ptr)->fatherTree->key = new HData(rem);
+    static_cast<HData *>(&*ptr)->toDelete = false;
     extractMin();
     save->key = rem;
     insert(save);

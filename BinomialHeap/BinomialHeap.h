@@ -62,14 +62,14 @@ public:
 
     BinomialHeap();
 
-    explicit BinomialHeap(const Array<BinomialTree<HData> *> &);
-
     template<typename Iterator>
     BinomialHeap(Iterator, Iterator);
 
     ~BinomialHeap();
 
 private:
+
+    explicit BinomialHeap(const Array<BinomialTree<HData> *> &);
 
     int mini;
 

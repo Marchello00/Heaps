@@ -31,6 +31,6 @@ enable_testing()
 
 #add_subdirectory(TestArray)
 #add_subdirectory(TestList)
-add_subdirectory(TestHeap)
-#add_subdirectory(TestBinomialHeap)
+#add_subdirectory(TestHeap)
+add_subdirectory(TestBinomialHeap)
 #add_subdirectory(TestFibHeap)

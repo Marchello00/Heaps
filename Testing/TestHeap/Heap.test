@@ -139,15 +139,17 @@ TEST(HeapUsage, Optimize) {
 TEST(HeapUsage, Change) {
     int n = 100;
     Array<int> a(n);
-    iota(a.begin(), a.end(), 0);
+    int seed = 100500;
+    srand(seed);
+    for (auto &c : a) {
+        c = rand();
+    }
     Array<Heap<int>::Pointer> ptr1, ptr2;
     Heap<int> h1, h2;
     for (int i = 0; i < n; ++i) {
         ptr1.push(h1.insert(a[i]));
         ptr2.push(h2.insert(a[i]));
     }
-    int seed = 100500;
-    srand(seed);
     Array<bool> here(n, true);
     for (int iter = 0; iter < n; ++iter) {
         int change = rand() % (n - iter) + 1;
