@@ -2,8 +2,6 @@
 #include <Array.h>
 #include <random>
 #include <algorithm>
-#include <Heap.h>
-#include <BinomialHeap.h>
 
 TEST(FibHeapConstructor, EmptyConstructor) {
     FibHeap<int> h;
