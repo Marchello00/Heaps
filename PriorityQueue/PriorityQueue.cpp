@@ -1,3 +1,6 @@
+#ifndef PRIORITYQUEUE_DONE
+#define PRIORITYQUEUE_DONE
+
 #ifndef INCLUDED_PQ
 
 #include "PriorityQueue.h"
@@ -63,3 +66,5 @@ std::ostream &operator<<(std::ostream &out, const typename PriorityQueue<Type>::
     out << a.key;
     return out;
 }
+
+#endif
