@@ -71,8 +71,7 @@ public:
 
     template<typename Iterator2>
     List(const Iterator2 &, const Iterator2 &,
-         typename std::enable_if<std::__is_input_iterator  <Iterator2>::value &&
-                                 std::is_constructible<
+         typename std::enable_if<std::is_constructible<
                                          Type,
                                          typename std::iterator_traits<Iterator2>::reference>::value>::type* = 0);
 

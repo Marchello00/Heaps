@@ -111,8 +111,7 @@ void List<Type>::check() const {
 template<typename Type>
 template<typename Iterator2>
 List<Type>::List(const Iterator2 &begin, const Iterator2 &end,
-                 typename std::enable_if<std::__is_input_iterator<Iterator2>::value &&
-                                         std::is_constructible<
+                 typename std::enable_if<std::is_constructible<
                                                  Type,
                                                  typename std::iterator_traits<Iterator2>::reference>::value>::type *)
         : List() {

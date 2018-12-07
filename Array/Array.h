@@ -12,7 +12,7 @@ public:
     Array(unsigned, const Type &);
 
     template<typename Iterator2>
-    Array(Iterator2, Iterator2, typename std::enable_if<std::__is_input_iterator<Iterator2>::value &&
+    Array(Iterator2, Iterator2, typename std::enable_if<
             std::is_constructible<
                     Type,
                     typename std::iterator_traits<Iterator2>::reference>::value>::type* = 0);
