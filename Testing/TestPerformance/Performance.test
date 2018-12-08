@@ -5,19 +5,37 @@
 #include <BinomialHeap.h>
 #include <FibHeap.h>
 
-void print(const std::string &s, int n, double t) {
+void printRes(const std::string &s, int n, double t) {
     std::cout << s << " time with n = " << n << " queries is " << t << " seconds\n";
 }
 
+void fillCmd(int mod, Array<int> &cmd) {
+    for (auto &c : cmd) {
+        c = rand() % mod;
+    }
+}
+
+template<typename T>
+void print(const std::string &head, int n, std::function<double(PriorityQueue<T> &)> func) {
+    std::cout << head << ":\n\n\n";
+    Heap<int> h;
+    auto t1 = func(h);
+    BinomialHeap<int> bh;
+    printRes("Heap", n, t1);
+    auto t2 = func(bh);
+    printRes("BinpmialHeap", n, t2);
+    FibHeap<int> fh;
+    auto t3 = func(fh);
+    printRes("FibHeap", n, t3);
+    std::cout << "\n-----------------------------------------\n\n";
+}
+
 TEST(SpeedTest, InsertErase) {
-    std::cout << "Insert and erase time test:\n\n\n";
     int seed = 100500;
     srand(seed);
     int n = (int) 1e6;
     Array<int> cmd(n);
-    for (int i = 0; i < n; ++i) {
-        cmd[i] = rand() % 3;
-    }
+    fillCmd(3, cmd);
     auto proc = [&](PriorityQueue<int> &heap) {
         auto tm = clock();
         int seed2 = seed * 104;
@@ -46,20 +64,10 @@ TEST(SpeedTest, InsertErase) {
         }
         return double(clock() - tm) / CLOCKS_PER_SEC;
     };
-    Heap<int> h;
-    auto t1 = proc(h);
-    BinomialHeap<int> bh;
-    print("Heap", n, t1);
-    auto t2 = proc(bh);
-    print("BinpmialHeap", n, t2);
-    FibHeap<int> fh;
-    auto t3 = proc(fh);
-    print("FibHeap", n, t3);
-    std::cout << "\n-----------------------------------------\n\n";
+    print<int>("Insert and erase time test", n, proc);
 }
 
 TEST(SpeedTest, InsertChange) {
-    std::cout << "Insert ans change time test:\n\n\n";
     int seed = 100500;
     srand(seed);
     int n = (int) 1e6;
@@ -88,14 +96,21 @@ TEST(SpeedTest, InsertChange) {
         }
         return double(clock() - tm) / CLOCKS_PER_SEC;
     };
-    Heap<int> h;
-    auto t1 = proc(h);
-    BinomialHeap<int> bh;
-    print("Heap", n, t1);
-    auto t2 = proc(bh);
-    print("BinpmialHeap", n, t2);
-    FibHeap<int> fh;
-    auto t3 = proc(fh);
-    print("FibHeap", n, t3);
-    std::cout << "\n-----------------------------------------\n\n";
+    print<int>("Insert ans change time test", n, proc);
+}
+
+TEST(SpeedTest, Insert) {
+    int seed = 100500;
+    srand(seed);
+    int n = (int) 1e6;
+    auto proc = [&](PriorityQueue<int> &heap) {
+        auto tm = clock();
+        int seed2 = seed * 104;
+        srand(seed2);
+        for (int i = 0 ; i < n; ++i) {
+            heap.insert(rand());
+        }
+        return double(clock() - tm) / CLOCKS_PER_SEC;
+    };
+    print<int>("Insert time test", n, proc);
 }
