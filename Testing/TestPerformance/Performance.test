@@ -1,5 +1,6 @@
 #include <ctime>
 #include <random>
+#include <functional>
 #include <Array.h>
 #include <Heap.h>
 #include <BinomialHeap.h>
