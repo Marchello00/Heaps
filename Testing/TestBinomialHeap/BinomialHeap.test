@@ -154,7 +154,7 @@ TEST(BinomialHeapUsage, Exception) {
     EXPECT_THROW(h.extractMin(), std::out_of_range);
 }
 
-TEST(BinomialHeap, Merge) {
+TEST(BinomialHeapUsage, Merge) {
     int n = 100;
     BinomialHeap<int> h1, h2, h3, h4;
     for (int i = 0; i < n; ++i) {

@@ -39,7 +39,7 @@ public:
     Heap(Iterator, Iterator);
 
 private:
-    const unsigned K = 2;
+    unsigned K = 2;
     const int BEGIN = 1;
 
     Array<HData *> heap;

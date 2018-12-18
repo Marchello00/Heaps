@@ -20,11 +20,13 @@ void Heap<Type>::siftUp(Pointer ptr) {
 template<typename Type>
 void Heap<Type>::siftDown(Pointer ptr) {
     for (int ind = static_cast<HData *>(&*ptr)->index;
-    child(ind, 0) < heap.size();) {
+            child(ind, 0) < heap.size();) {
         unsigned mini = 0;
-        if (child(ind, 1) < heap.size() &&
-            heap[child(ind, 1)]->key < heap[child(ind, 0)]->key) {
-            mini = 1;
+        for (unsigned i = 0; i < K; ++i) {
+            if (child(ind, i) < heap.size() &&
+                heap[child(ind, i)]->key < heap[child(ind, mini)]->key) {
+                mini = i;
+            }
         }
         if (heap[ind]->key <= heap[child(ind, mini)]->key) {
             break;
@@ -76,7 +78,10 @@ template<typename Type>
 const Type Heap<Type>::extractMin() {
     if (last) {
         --last;
-        if (wasInsert) heapify();
+        if (wasInsert) {
+            K = 2;
+            heapify();
+        }
         wasInsert = false;
     }
     Base::check();
@@ -96,7 +101,10 @@ const typename Heap<Type>::Pointer Heap<Type>::insert(const Type &key) {
         if (--last) {
             wasInsert = true;
         } else {
-            if (!wasInsert) heapify();
+            if (!wasInsert) {
+                K = 2;
+                heapify();
+            }
         }
     } else {
         siftUp(ptr);
@@ -130,8 +138,8 @@ const unsigned Heap<Type>::size() const {
 template<typename Type>
 void Heap<Type>::optimize(unsigned insertCount, unsigned extractCount) {
     unsigned n = insertCount + extractCount;
-    if (insertCount + extractCount * n < 5 * n * (int) std::log2(n)) { // insert - O(1), extract - O(n)
-        last = n;
+    if (10 * sqrt(n) > extractCount) {
+        K = (unsigned) sqrt(n);
     }
 }
 

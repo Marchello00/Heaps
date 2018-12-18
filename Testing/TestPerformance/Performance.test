@@ -43,9 +43,9 @@ TEST(SpeedTest, InsertErase) {
     Array<int> cmd(n);
     fillCmd(3, cmd);
     auto proc = [&](PriorityQueue<int> *heap) {
-        auto tm = clock();
         int seed2 = seed * 104;
         srand(seed2);
+        auto tm = clock();
         Array<PriorityQueue<int>::Pointer> ptrs;
         for (auto c : cmd) {
             switch (c) {
@@ -82,9 +82,9 @@ TEST(SpeedTest, InsertChange) {
         cmd[i] = rand() % 2;
     }
     auto proc = [&](PriorityQueue<int> *heap) {
-        auto tm = clock();
         int seed2 = seed * 104;
         srand(seed2);
+        auto tm = clock();
         Array<PriorityQueue<int>::Pointer> ptrs;
         for (auto c : cmd) {
             switch (c) {
@@ -110,9 +110,9 @@ TEST(SpeedTest, Insert) {
     srand(seed);
     int n = (int) 1e6;
     auto proc = [&](PriorityQueue<int> *heap) {
-        auto tm = clock();
         int seed2 = seed * 104;
         srand(seed2);
+        auto tm = clock();
         for (int i = 0 ; i < n; ++i) {
             heap->insert(rand());
         }
@@ -126,7 +126,6 @@ TEST(SpeedTest, InsertAndMerge) {
     srand(seed);
     int n = (int) 1e6;
     auto proc = [&](PriorityQueue<int> *heap) {
-        auto tm = clock();
         int seed2 = seed * 104;
         srand(seed2);
         bool isBH = dynamic_cast<BinomialHeap<int> *>(heap);
@@ -136,6 +135,7 @@ TEST(SpeedTest, InsertAndMerge) {
         } else {
             heap2 = new FibHeap<int>;
         }
+        auto tm = clock();
         for (int i = 0; i < n; ++i) {
             heap->insert(rand());
             heap2->insert(rand());
@@ -149,4 +149,13 @@ TEST(SpeedTest, InsertAndMerge) {
         return double(clock() - tm) / CLOCKS_PER_SEC;
     };
     print<int>("Insert and merge test", n, proc, false);
+}
+
+TEST(SpeedTest, InsertChangeErase) {
+    int seed = 100500;
+    srand(seed);
+    int n = (int) 1e6;
+    auto proc = [&](PriorityQueue<int> *heap) {
+        auto tm = clock();
+    };
 }
