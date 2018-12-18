@@ -151,11 +151,61 @@ TEST(SpeedTest, InsertAndMerge) {
     print<int>("Insert and merge test", n, proc, false);
 }
 
-TEST(SpeedTest, InsertChangeErase) {
+TEST(SpeedTest, InsertChangeEraseExtract) {
     int seed = 100500;
     srand(seed);
     int n = (int) 1e6;
     auto proc = [&](PriorityQueue<int> *heap) {
+        int seed2 = 104 * seed;
+        srand(seed2);
+        Array<int> cmd(n);
+        for (int i = 0; i < n; ++i) {
+            cmd[i] = rand() % 4;
+        }
+        Array<PriorityQueue<int>::Pointer> pts;
+        Array<int> vals;
+        std::set<int> erased;
         auto tm = clock();
+        for (auto c : cmd) {
+            switch (c) {
+                case 0: {
+                    vals.push(rand());
+                    pts.push(heap->insert(vals[-1]));
+                    break;
+                }
+                case 1: {
+                    if (pts.empty()) continue;
+                    int ind = rand() % pts.size();
+                    auto now = clock();
+                    bool need = erased.find(vals[ind]) == erased.end();
+                    if (need) erased.insert(vals[ind]);
+                    tm += clock() - now;
+                    if (need) heap->erase(pts[ind]);
+                    break;
+                }
+                case 2: {
+                    if (pts.empty()) continue;
+                    int ind = rand() % pts.size();
+                    auto now = clock();
+                    bool need = erased.find(vals[ind]) == erased.end();
+                    tm += clock() - now;
+                    if (need) *pts[ind] = vals[ind] = rand();
+                    break;
+                }
+                case 3: {
+                    try {
+                        int ret = heap->extractMin();
+                        auto now = clock();
+                        erased.insert(ret);
+                        tm += clock() - now;
+                    } catch (...) {
+                        EXPECT_TRUE(heap->empty());
+                    }
+                }
+                default:break;
+            }
+        }
+        return double(clock() - tm) / CLOCKS_PER_SEC;
     };
+    print<int>("Mass test", n, proc);
 }
