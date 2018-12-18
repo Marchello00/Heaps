@@ -17,12 +17,14 @@ void fillCmd(int mod, Array<int> &cmd) {
 }
 
 template<typename T>
-void print(const std::string &head, int n, std::function<double(PriorityQueue<T> &)> func) {
+void print(const std::string &head, int n, std::function<double(PriorityQueue<T> &)> func, bool withHeap = true) {
     std::cout << head << ":\n\n\n";
-    Heap<int> h;
-    auto t1 = func(h);
+    if (withHeap) {
+        Heap<int> h;
+        auto t1 = func(h);
+        printRes("Heap", n, t1);
+    }
     BinomialHeap<int> bh;
-    printRes("Heap", n, t1);
     auto t2 = func(bh);
     printRes("BinpmialHeap", n, t2);
     FibHeap<int> fh;
@@ -114,4 +116,31 @@ TEST(SpeedTest, Insert) {
         return double(clock() - tm) / CLOCKS_PER_SEC;
     };
     print<int>("Insert time test", n, proc);
+}
+
+TEST(SpeedTest, InsertAndMerge) {
+    int seed = 100500;
+    srand(seed);
+    int n = (int) 1e6;
+    auto tm = clock();
+    BinomialHeap<int> bh1, bh2;
+    for (int i = 0; i < n; ++i) {
+        bh1.insert(rand());
+        bh2.insert(rand());
+    }
+    auto res1 = double(clock() - tm) / CLOCKS_PER_SEC;
+    bh1 += bh2;
+    std::cout << "Insert and merge test" << ":\n\n\n";
+    printRes("BinpmialHeap", n, res1);
+    srand(seed);
+    tm = clock();
+    FibHeap<int> fh1, fh2;
+    for (int i = 0; i < n; ++i) {
+        fh1.insert(rand());
+        fh2.insert(rand());
+    }
+    auto res2 = double(clock() - tm) / CLOCKS_PER_SEC;
+    fh1 += fh2;
+    printRes("FibHeap", n, res2);
+    std::cout << "\n-----------------------------------------\n\n";
 }
