@@ -138,7 +138,7 @@ const unsigned Heap<Type>::size() const {
 template<typename Type>
 void Heap<Type>::optimize(unsigned insertCount, unsigned extractCount) {
     double c = std::log2(extractCount) / std::log2(insertCount);
-    if (c < 1) {
+    if (c < 0.91) {
         K = (unsigned) std::pow(insertCount, 1 - c);
     }
 }

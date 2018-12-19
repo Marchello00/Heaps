@@ -34,7 +34,7 @@ template<typename T, typename... Heaps>
 void print(const std::string &head, int n, std::function<double(PriorityQueue<T> *)> func) {
     std::cout << head << ":\n\n\n";
     printOne<T, Heaps...>(n, func);
-    std::cout << "\n-----------------------------------------\n\n";
+    std::cout << "\n-----------------------------------------\n" << std::end
 }
 
 TEST(SpeedTest, InsertErase) {
@@ -206,7 +206,7 @@ TEST(SpeedTest, InsertChangeEraseExtract) {
 TEST(SpeedTest, Optimize) {
     int seed = 100500;
     int n = (int) 1e6;
-    for (double st = 0.1; st < 0.91; st += 0.1) {
+    for (double st = 0.05; st < 1; st += 0.05) {
         bool wasOptimized = false;
         int insertCount = n, extractCount = (int)std::pow(insertCount, st);
         auto num = insertCount + extractCount;
