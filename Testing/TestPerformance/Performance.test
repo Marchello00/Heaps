@@ -227,6 +227,7 @@ TEST(SpeedTest, Optimize) {
         }
         shuffle(cmd.begin(), cmd.end(), std::default_random_engine(seed));
         auto proc = [&](PriorityQueue<int> *heap) {
+            srand(seed);
             if (!wasOptimized) {
                 dynamic_cast<Heap<int> *>(heap)->optimize(insertCount, extractCount);
                 wasOptimized = true;

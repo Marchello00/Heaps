@@ -133,7 +133,8 @@ void Heap<Type>::optimize(unsigned insertCount, unsigned extractCount) {
     double c = std::log2(extractCount) / std::log2(insertCount);
     if (c < 0.91) {
         last = extractCount + insertCount;
-        K = std::max((unsigned) (0.1 * std::pow(insertCount, 1 - c)), 2U);
+//        K = 2;
+        K = std::max((unsigned) (std::pow(insertCount, 1 - c)), 2U);
     }
 }
 
