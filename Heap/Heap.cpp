@@ -46,7 +46,7 @@ void Heap<Type>::swap(int ind1, int ind2) {
 template<typename Type>
 const unsigned Heap<Type>::parent(int index) const {
     if (index < 0) index += heap.size();
-    return index / K;
+    return (index - 1) / K + 1;
 }
 
 template<typename Type>

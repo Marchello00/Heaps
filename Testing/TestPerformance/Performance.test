@@ -1,10 +1,12 @@
 #include <ctime>
 #include <random>
 #include <functional>
+#include <cmath>
 #include <Array.h>
 #include <Heap.h>
 #include <BinomialHeap.h>
 #include <FibHeap.h>
+#include <string>
 
 void printRes(const std::string &s, int n, double t) {
     std::cout << s << " time with n = " << n << " queries is " << t << " seconds\n";
@@ -16,23 +18,22 @@ void fillCmd(int mod, Array<int> &cmd) {
     }
 }
 
+template<class T, class Hp, typename... Heaps>
+void printOne(int n, std::function<double(PriorityQueue<T> *)> func) {
+    auto h = new Hp;
+    auto t = func(h);
+    delete(h);
+    printRes(typeid(Hp).name(), n, t);
+    printOne<T, Heaps...>(n, func);
+}
+
 template<typename T>
-void print(const std::string &head, int n, std::function<double(PriorityQueue<T> *)> func, bool withHeap = true) {
+void printOne(int n, std::function<double(PriorityQueue<T> *)> func) { }
+
+template<typename T, typename... Heaps>
+void print(const std::string &head, int n, std::function<double(PriorityQueue<T> *)> func) {
     std::cout << head << ":\n\n\n";
-    if (withHeap) {
-        auto h = new Heap<int>;
-        auto t1 = func(h);
-        delete(h);
-        printRes("Heap", n, t1);
-    }
-    auto *bh = new BinomialHeap<T>;
-    auto t2 = func(bh);
-    delete(bh);
-    printRes("BinpmialHeap", n, t2);
-    auto *fh = new FibHeap<T>;
-    auto t3 = func(fh);
-    delete(fh);
-    printRes("FibHeap", n, t3);
+    printOne<T, Heaps...>(n, func);
     std::cout << "\n-----------------------------------------\n\n";
 }
 
@@ -70,7 +71,7 @@ TEST(SpeedTest, InsertErase) {
         }
         return double(clock() - tm) / CLOCKS_PER_SEC;
     };
-    print<int>("Insert and erase time test", n, proc);
+    print<int, Heap<int>, BinomialHeap<int>, FibHeap<int>>("Insert and erase time test", n, proc);
 }
 
 TEST(SpeedTest, InsertChange) {
@@ -102,32 +103,28 @@ TEST(SpeedTest, InsertChange) {
         }
         return double(clock() - tm) / CLOCKS_PER_SEC;
     };
-    print<int>("Insert ans change time test", n, proc);
+    print<int, Heap<int>, BinomialHeap<int>, FibHeap<int>>("Insert ans change time test", n, proc);
 }
 
 TEST(SpeedTest, Insert) {
     int seed = 100500;
-    srand(seed);
     int n = (int) 1e6;
     auto proc = [&](PriorityQueue<int> *heap) {
-        int seed2 = seed * 104;
-        srand(seed2);
+        srand(seed);
         auto tm = clock();
         for (int i = 0 ; i < n; ++i) {
             heap->insert(rand());
         }
         return double(clock() - tm) / CLOCKS_PER_SEC;
     };
-    print<int>("Insert time test", n, proc);
+    print<int, Heap<int>, BinomialHeap<int>, FibHeap<int>>("Insert time test", n, proc);
 }
 
 TEST(SpeedTest, InsertAndMerge) {
     int seed = 100500;
-    srand(seed);
     int n = (int) 1e6;
     auto proc = [&](PriorityQueue<int> *heap) {
-        int seed2 = seed * 104;
-        srand(seed2);
+        srand(seed);
         bool isBH = dynamic_cast<BinomialHeap<int> *>(heap);
         PriorityQueue<int> *heap2 = nullptr;
         if (isBH) {
@@ -148,20 +145,16 @@ TEST(SpeedTest, InsertAndMerge) {
         delete heap2;
         return double(clock() - tm) / CLOCKS_PER_SEC;
     };
-    print<int>("Insert and merge test", n, proc, false);
+    print<int, BinomialHeap<int>, FibHeap<int>>("Insert and merge test", n, proc);
 }
 
 TEST(SpeedTest, InsertChangeEraseExtract) {
     int seed = 100500;
-    srand(seed);
     int n = (int) 1e6;
+    Array<int> cmd(n);
+    fillCmd(4, cmd);
     auto proc = [&](PriorityQueue<int> *heap) {
-        int seed2 = 104 * seed;
-        srand(seed2);
-        Array<int> cmd(n);
-        for (int i = 0; i < n; ++i) {
-            cmd[i] = rand() % 4;
-        }
+        srand(seed);
         Array<PriorityQueue<int>::Pointer> pts;
         Array<int> vals;
         std::set<int> erased;
@@ -207,5 +200,44 @@ TEST(SpeedTest, InsertChangeEraseExtract) {
         }
         return double(clock() - tm) / CLOCKS_PER_SEC;
     };
-    print<int>("Mass test", n, proc);
+    print<int, Heap<int>, BinomialHeap<int>, FibHeap<int>>("Mass test", n, proc);
+}
+
+TEST(SpeedTest, Optimize) {
+    int seed = 100500;
+    int n = (int) 1e6;
+    for (double st = 0.1; st < 0.91; st += 0.1) {
+        bool wasOptimized = false;
+        int insertCount = n, extractCount = (int)std::pow(insertCount, st);
+        auto num = insertCount + extractCount;
+        Array<int> cmd(num, 0);
+        for (int i = 0; i < n; ++i) {
+            cmd[i] = 1;
+        }
+        shuffle(cmd.begin(), cmd.end(), std::default_random_engine(seed));
+        auto proc = [&](PriorityQueue<int> *heap) {
+            auto tm = clock();
+            if (!wasOptimized) {
+                dynamic_cast<Heap<int> *>(heap)->optimize(insertCount, extractCount);
+                wasOptimized = false;
+            }
+            for (auto c : cmd) {
+                switch (c) {
+                    case 0: {
+                        heap->insert(rand());
+                        break;
+                    }
+                    case 1: {
+                        try {
+                            heap->extractMin();
+                        } catch (...) { }
+                        break;
+                    }
+                    default: break;
+                }
+            }
+            return double(clock() - tm) / CLOCKS_PER_SEC;
+        };
+        print<int, Heap<int>, Heap<int>>("Optimize test with extract = insert^(" + std::to_string(st) + ")", n, proc);
+    }
 }
