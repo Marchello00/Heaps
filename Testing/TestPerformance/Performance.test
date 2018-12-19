@@ -8,7 +8,16 @@
 #include <FibHeap.h>
 #include <string>
 
-//templ]
+template<typename T>
+std::string name(const std::string &fn) {
+    if (fn == typeid(Heap<T>).name()) {
+        return "Heap";
+    }
+    if (fn == typeid(BinomialHeap<T>).name()) {
+        return "BinomialHeap";
+    }
+    return "FibHeap";
+}
 
 void printRes(const std::string &s, int n, double t) {
     std::cout << s << " time with n = " << n << " queries is " << t << " seconds\n";
@@ -25,7 +34,7 @@ void printOne(int n, std::function<double(PriorityQueue<T> *)> func) {
     auto h = new Hp;
     auto t = func(h);
     delete(h);
-    printRes(typeid(Hp).name(), n, t);
+    printRes(name<T>(typeid(Hp).name()), n, t);
     printOne<T, Heaps...>(n, func);
 }
 
@@ -243,6 +252,6 @@ TEST(SpeedTest, Optimize) {
             }
             return double(clock() - tm) / CLOCKS_PER_SEC;
         };
-        print<int, Heap<int>, Heap<int>>("Optimize test with extract = insert^(" + std::to_string(st) + ")", n, proc);
+        print<int, Heap<int>, Heap<int>>("Optimize test with extract = insert^(" + std::to_string(st) + ")", num, proc);
     }
 }

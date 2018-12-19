@@ -40,7 +40,7 @@ public:
 
 private:
     unsigned K = 2;
-    const int BEGIN = 1;
+    const int BEGIN = 0;
 
     Array<HData *> heap;
 

@@ -46,18 +46,18 @@ void Heap<Type>::swap(int ind1, int ind2) {
 template<typename Type>
 const unsigned Heap<Type>::parent(int index) const {
     if (index < 0) index += heap.size();
-    return (index - 1) / K + 1;
+    return (index - 1) / K;
 }
 
 template<typename Type>
 const unsigned Heap<Type>::child(int index, int nchild) const {
     if (index < 0) index += heap.size();
     if (nchild < 0) nchild += K;
-    return index * K + nchild;
+    return index * K + nchild + 1;
 }
 
 template<typename Type>
-Heap<Type>::Heap(): heap(1, nullptr) {}
+Heap<Type>::Heap() {}
 
 template<typename Type>
 template<typename Iterator>
@@ -113,7 +113,7 @@ void Heap<Type>::erase(const typename Heap<Type>::Pointer &ptr) {
 
 template<typename Type>
 void Heap<Type>::heapify() {
-    for (int i = (int)heap.size() - 1; i > 0; --i) {
+    for (int i = (int)heap.size() - 1; i >= BEGIN; --i) {
         siftDown(Pointer(heap[i]));
     }
 }
@@ -133,7 +133,7 @@ void Heap<Type>::optimize(unsigned insertCount, unsigned extractCount) {
     double c = std::log2(extractCount) / std::log2(insertCount);
     if (c < 0.91) {
         last = extractCount + insertCount;
-        K = (unsigned) (std::pow(insertCount, 1 - c));
+        K = std::max((unsigned) (0.1 * std::pow(insertCount, 1 - c)), 2U);
     }
 }
 
