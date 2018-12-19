@@ -34,7 +34,7 @@ template<typename T, typename... Heaps>
 void print(const std::string &head, int n, std::function<double(PriorityQueue<T> *)> func) {
     std::cout << head << ":\n\n\n";
     printOne<T, Heaps...>(n, func);
-    std::cout << "\n-----------------------------------------\n" << std::end
+    std::cout << "\n-----------------------------------------\n" << std::endl;
 }
 
 TEST(SpeedTest, InsertErase) {
