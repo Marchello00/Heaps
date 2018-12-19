@@ -56,7 +56,6 @@ private:
     void swap(int, int);
 
     unsigned last = 0;                          // for optimize
-    bool wasInsert = false;                     // for optimize
 };
 
 #define INCLUDED_HEAP

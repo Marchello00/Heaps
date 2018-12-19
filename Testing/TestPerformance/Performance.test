@@ -8,6 +8,8 @@
 #include <FibHeap.h>
 #include <string>
 
+//templ]
+
 void printRes(const std::string &s, int n, double t) {
     std::cout << s << " time with n = " << n << " queries is " << t << " seconds\n";
 }
@@ -216,11 +218,14 @@ TEST(SpeedTest, Optimize) {
         }
         shuffle(cmd.begin(), cmd.end(), std::default_random_engine(seed));
         auto proc = [&](PriorityQueue<int> *heap) {
-            auto tm = clock();
             if (!wasOptimized) {
                 dynamic_cast<Heap<int> *>(heap)->optimize(insertCount, extractCount);
-                wasOptimized = false;
+                wasOptimized = true;
+                std::cout << "Optimized:\n";
+            } else {
+                std::cout << "Not optimized:\n";
             }
+            auto tm = clock();
             for (auto c : cmd) {
                 switch (c) {
                     case 0: {

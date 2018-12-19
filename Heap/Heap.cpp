@@ -77,12 +77,10 @@ const Type Heap<Type>::getMin() const {
 template<typename Type>
 const Type Heap<Type>::extractMin() {
     if (last) {
-        --last;
-        if (wasInsert) {
+        if (!--last) {
             K = 2;
             heapify();
         }
-        wasInsert = false;
     }
     Base::check();
     Type ret = heap[BEGIN]->key;
@@ -98,17 +96,12 @@ const typename Heap<Type>::Pointer Heap<Type>::insert(const Type &key) {
     heap.push(dt);
     Pointer ptr(dt, this);
     if (last) {
-        if (--last) {
-            wasInsert = true;
-        } else {
-            if (!wasInsert) {
-                K = 2;
-                heapify();
-            }
+        if (!--last) {
+            K = 2;
+            heapify();
         }
-    } else {
-        siftUp(ptr);
     }
+    siftUp(ptr);
     return ptr;
 }
 
@@ -139,7 +132,8 @@ template<typename Type>
 void Heap<Type>::optimize(unsigned insertCount, unsigned extractCount) {
     double c = std::log2(extractCount) / std::log2(insertCount);
     if (c < 0.91) {
-        K = (unsigned) std::pow(insertCount, 1 - c);
+        last = extractCount + insertCount;
+        K = (unsigned) (std::pow(insertCount, 1 - c));
     }
 }
 
